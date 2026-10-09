@@ -14,7 +14,6 @@ export class TimeSystem {
   }
 
   init() {
-    // Ensure speed is valid on load.
     const speed = this._state.get("time").speed;
     if (!VALID_SPEEDS.includes(speed)) {
       this._state.get("time").speed = "normal";
@@ -40,7 +39,7 @@ export class TimeSystem {
     const time = this._state.get("time");
     if (time.speed === key) return;
     time.speed = key;
-    this._state.set("time", time); // triggers state:changed
+    this._state.set("time", time);
     this._bus.emit("time:speedChanged", { speed: key });
   }
 
@@ -51,17 +50,12 @@ export class TimeSystem {
   }
   isPaused() { return this.getSpeed() === "paused"; }
 
-  /**
-   * Advance exactly one simulated day. Only GameLoop should call this.
-   */
   advanceOneDay() {
     const time = this._state.get("time");
     const nextDate = advanceDate(time.currentDate, 1);
     time.currentDate = nextDate;
     time.totalDaysElapsed += 1;
 
-    // Direct mutation is OK here: this is the canonical owner of time.
-    // Fire "time:dayPassed" once. All other systems listen to this.
     this._bus.emit("time:dayPassed", {
       date: nextDate,
       totalDays: time.totalDaysElapsed
