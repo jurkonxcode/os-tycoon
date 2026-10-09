@@ -1,6 +1,5 @@
 /**
  * The ONLY system allowed to change company.cash and researchPoints.
- * All financial events flow through here and are recorded in the ledger.
  */
 import { BALANCE } from "../config/balanceConfig.js";
 
@@ -40,10 +39,6 @@ export class EconomySystem {
     return this.getCash() >= amount;
   }
 
-  /**
-   * Public API for other systems: spend cash.
-   * Returns { ok, reason } — caller must check.
-   */
   trySpend(amount, category, reason) {
     if (!Number.isFinite(amount) || amount < 0) {
       throw new Error("trySpend: amount must be a non-negative finite number.");
@@ -128,16 +123,11 @@ export class EconomySystem {
     }
   }
 
-  /**
-   * Once per simulated day: snapshot daily revenue/expense into history,
-   * reset daily counters. Does NOT change cash.
-   */
   _onDay() {
     const finance = this._state.get("finance");
     const date = this._time.getDate();
     const totalDays = this._time.getTotalDays();
 
-    // Only record history once per total day.
     if (totalDays === this._lastHistoryDay) return;
     this._lastHistoryDay = totalDays;
 
