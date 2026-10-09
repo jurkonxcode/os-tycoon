@@ -1,7 +1,5 @@
 /**
  * Salaries, reputation, and daily operating costs.
- * Subscribes to "time:dayPassed" so that money is deducted exactly once
- * per simulated day.
  */
 import { BALANCE } from "../config/balanceConfig.js";
 import {
@@ -42,7 +40,6 @@ export class CompanySystem {
     const salaries = this.getDailySalaries();
     const upkeep = this.getDailyUpkeep();
 
-    // Ask EconomySystem to record the expense — do not touch cash here.
     this._bus.emit("economy:expense", {
       amount: salaries + upkeep,
       category: "operating",
@@ -50,7 +47,6 @@ export class CompanySystem {
       breakdown: { salaries, upkeep }
     });
 
-    // Reputation drifts up slightly when cash is healthy.
     if (company.cash > BALANCE.LOW_CASH_THRESHOLD) {
       company.reputation = Math.min(100, company.reputation + 0.01);
     }
