@@ -33,7 +33,6 @@ export class SettingsView {
       el("h1", { style: "font-size:var(--fs-2xl);font-weight:700;margin-top:2px", text: "Save & Load" })
     ]));
 
-    // Save panel
     const savePanel = el("section", { class: "panel" }, [
       el("div", { class: "panel__header" }, [
         el("div", {}, [
@@ -67,12 +66,11 @@ export class SettingsView {
     ]);
     this._root.appendChild(savePanel);
 
-    // Info panel
     const infoPanel = el("section", { class: "panel" }, [
       el("div", { class: "panel__title", text: "About" }),
       el("div", { class: "stack text-muted", style: "font-size:var(--fs-sm)" }, [
         el("div", { text: "OS Tycoon: Technology Empire" }),
-        el("div", { text: `Starting cash: $${(50000).toLocaleString()}` }),
+        el("div", { text: "Starting cash: $50,000" }),
         el("div", { text: "Starting research points: 100" }),
         el("div", { text: "Start date: 1 January 1995" }),
         el("div", { text: `Max days per frame: ${GAME_CONFIG.MAX_DAYS_PER_FRAME}` })
@@ -89,12 +87,10 @@ export class SettingsView {
   }
 
   _btn(text, variant, onClick) {
-    return el("button", {
-      class: `btn ${variant === "primary" ? "btn--primary" : variant === "danger" ? "btn--danger" : "btn--ghost"}`,
-      type: "button",
-      text,
-      on: { click: onClick }
-    });
+    const cls = variant === "primary" ? "btn btn--primary"
+              : variant === "danger"  ? "btn btn--danger"
+              : "btn btn--ghost";
+    return el("button", { class: cls, type: "button", text, on: { click: onClick } });
   }
 
   _notify(text, ok) {
