@@ -3,145 +3,570 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0F0F1E">
+<meta name="theme-color" content="#0A0A14">
 <title>OS Tycoon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
-/* === RESET & THEME === */
+/* === RESET === */
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+/* === THEME === */
 :root {
-  --bg: #0F0F1E; --panel: #1A1A2E; --panel2: #20203A; --border: #2A2A40;
-  --text: #E8E8F0; --dim: #A0A0B0;
-  --accent: #00D9FF; --accent2: #FFB800;
-  --success: #00E676; --warn: #FF5252; --purple: #B388FF;
+  --bg: #0A0A14;
+  --surface: rgba(26, 26, 46, 0.72);
+  --surface-solid: #16162A;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hi: rgba(255, 255, 255, 0.14);
+  --text: #F0F0F8;
+  --text-dim: #8A8AA0;
+  --text-mute: #5A5A70;
+  --accent: #00E0FF;
+  --accent-2: #B388FF;
+  --success: #00E676;
+  --warn: #FF5C7A;
+  --gold: #FFC93C;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
+
+/* === BASE === */
 html, body {
-  background: var(--bg); color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased; min-height: 100vh;
-  touch-action: manipulation; overflow-x: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  touch-action: manipulation;
+  overflow-x: hidden;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
-/* === LAYOUT === */
-.app { max-width: 520px; margin: 0 auto; padding: 12px; padding-bottom: 90px; }
-.header { display: flex; justify-content: space-between; align-items: center; padding: 8px 0 12px; }
-.brand { font-weight: 700; letter-spacing: 1.5px; font-size: 13px; color: var(--accent); }
-.date { font-size: 11px; color: var(--dim); }
-.money { font-family: ui-monospace, monospace; font-size: 15px; font-weight: 600; }
-.hstack { display: flex; align-items: center; gap: 8px; }
-/* === NAV TABS === */
-.tabs {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: rgba(15,15,30,0.95); backdrop-filter: blur(12px);
-  border-top: 1px solid var(--border);
-  display: flex; justify-content: space-around;
-  padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
-  z-index: 10;
+
+/* Mesh gradient background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(0, 224, 255, 0.15), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 90% 20%, rgba(179, 136, 255, 0.12), transparent 60%),
+    radial-gradient(ellipse 90% 70% at 50% 100%, rgba(0, 224, 255, 0.08), transparent 60%);
+  pointer-events: none;
 }
-.tab {
-  flex: 1; background: none; border: none; color: var(--dim);
-  padding: 8px 4px; cursor: pointer; font-family: inherit;
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  transition: color 150ms; font-size: 10px;
+
+/* Noise texture */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.tab.active { color: var(--accent); }
-.tab-icon { font-size: 16px; }
+
+/* === APP LAYOUT === */
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px 16px 110px;
+  position: relative;
+}
+
+/* === HEADER === */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding-top: 8px;
+}
+.brand-block { display: flex; flex-direction: column; gap: 4px; }
+.brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #00E0FF 0%, #B388FF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.1;
+}
+.date-row {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+.money-block { display: flex; align-items: center; gap: 10px; }
+.money {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  transition: color 400ms;
+}
+.money.up { color: var(--success); }
+.money.down { color: var(--warn); }
+.play-btn {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--text);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: inherit;
+  transition: transform 120ms, background 200ms;
+}
+.play-btn:active { transform: scale(0.94); }
+
 /* === CARDS === */
-.card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-.card-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--dim); margin-bottom: 12px; font-weight: 600; }
-.card-sub { font-size: 11px; color: var(--dim); margin-top: 8px; }
-/* === CHART === */
-.chart { width: 100%; height: 130px; display: block; }
-.chart-sm { height: 90px; }
-.chart-empty { height: 130px; display: flex; align-items: center; justify-content: center; color: var(--dim); font-size: 12px; text-align: center; padding: 0 16px; }
+.card {
+  background: var(--surface);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.05) inset,
+    0 20px 40px -20px rgba(0,0,0,0.5);
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+}
+.card-title {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+
 /* === STATS === */
-.stats-row { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
-.stat { flex: 1; min-width: 80px; display: flex; flex-direction: column; gap: 2px; }
-.stat-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
-.stat-value { font-family: ui-monospace, monospace; font-size: 15px; font-weight: 600; }
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-mute);
+  font-weight: 600;
+}
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
 .stat-value.accent { color: var(--accent); }
 .stat-value.success { color: var(--success); }
-.stat-value.warn { color: var(--warn); }
-/* === FEATURES === */
-.feature-list { display: flex; flex-direction: column; gap: 8px; }
-.era-header { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin: 12px 0 6px; }
-.feature-btn {
-  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-  border-radius: 8px; padding: 10px 12px; color: var(--text); text-align: left;
-  cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 4px;
-  transition: transform 120ms, border-color 120ms; font-family: inherit;
+.stat-value.gold { color: var(--gold); }
+
+/* === CHART === */
+.chart-wrap {
+  position: relative;
+  height: 160px;
+  margin: 0 -8px;
 }
-.feature-btn:active:not(:disabled) { transform: scale(0.98); }
-.feature-btn.available { border-color: var(--accent); }
-.feature-btn.locked { opacity: 0.35; cursor: not-allowed; }
-.feature-btn.done { opacity: 0.6; border-color: var(--success); }
-.feature-btn.researching { border-color: var(--accent2); }
-.feature-name { font-size: 14px; font-weight: 500; }
-.feature-cost { font-size: 11px; color: var(--dim); font-family: ui-monospace, monospace; }
-.feature-status { grid-row: 1 / 3; grid-column: 2; align-self: center; font-size: 14px; }
-/* === PROGRESS === */
-.progress { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-top: 8px; }
-.progress-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width 300ms; }
-.progress-bar.warn { background: var(--accent2); }
+.chart-wrap.sm { height: 110px; }
+.chart {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.chart-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-mute);
+  font-size: 13px;
+  text-align: center;
+  padding: 0 20px;
+  font-family: var(--font-mono);
+}
+
 /* === BUTTONS === */
 .btn {
-  background: var(--panel2); color: var(--text); border: 1px solid var(--border);
-  border-radius: 10px; padding: 12px; font-size: 13px; font-weight: 600;
-  cursor: pointer; font-family: inherit; transition: transform 120ms, opacity 120ms;
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: transform 120ms, background 200ms, border-color 200ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn.primary {
+  background: linear-gradient(135deg, #00E0FF 0%, #00A6C4 100%);
+  color: #0A0A14;
+  border: none;
+  padding: 16px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  box-shadow:
+    0 8px 24px -8px rgba(0,224,255,0.5),
+    0 1px 0 rgba(255,255,255,0.4) inset;
+  position: relative;
+  overflow: hidden;
+}
+.btn.primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: translateX(-100%);
+  transition: transform 600ms;
+}
+.btn.primary:active::after { transform: translateX(100%); }
+.btn.danger {
+  background: linear-gradient(135deg, #FF5C7A 0%, #C43A55 100%);
+  color: #fff;
+  border: none;
+}
+.btn-row { display: flex; gap: 8px; }
+
+/* === FEATURES === */
+.feature-list { display: flex; flex-direction: column; gap: 8px; }
+.era-header {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin: 16px 0 8px;
+}
+.era-header:first-child { margin-top: 0; }
+.feature-btn {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px;
+  transition: transform 120ms, border-color 200ms, background 200ms;
+  font-family: inherit;
   width: 100%;
 }
-.btn:active:not(:disabled) { transform: scale(0.98); }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn.primary { background: var(--accent); color: #0F0F1E; border: none; padding: 14px; font-weight: 700; letter-spacing: 0.5px; }
-.btn.danger { background: var(--warn); color: #fff; border: none; }
-.btn.ghost { background: transparent; }
-.btn-row { display: flex; gap: 8px; }
-.play-btn { background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 12px; font-weight: 700; font-family: inherit; }
-.play-btn:active { transform: scale(0.94); }
+.feature-btn:active:not(:disabled) { transform: scale(0.985); }
+.feature-btn.available {
+  border-color: rgba(0,224,255,0.4);
+  background: rgba(0,224,255,0.04);
+}
+.feature-btn.locked { opacity: 0.28; cursor: not-allowed; }
+.feature-btn.done {
+  opacity: 0.7;
+  border-color: rgba(0,230,118,0.3);
+  background: rgba(0,230,118,0.03);
+}
+.feature-btn.researching { border-color: rgba(255,201,60,0.5); }
+.feature-name {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-body);
+}
+.feature-cost {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+.feature-status {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  align-self: center;
+  display: flex;
+  align-items: center;
+}
+
+/* === PROGRESS === */
+.progress {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 10px;
+  position: relative;
+}
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #00E0FF, #B388FF);
+  border-radius: 2px;
+  transition: width 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  box-shadow: 0 0 12px rgba(0,224,255,0.6);
+}
+.progress-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
 /* === COMPETITORS === */
-.comp-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
-.comp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.comp-name { flex: 1; font-size: 13px; }
-.comp-share { font-family: ui-monospace, monospace; font-size: 13px; font-weight: 600; }
+.comp-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.comp-row:last-child { border-bottom: none; }
+.comp-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 12px currentColor;
+}
+.comp-name { flex: 1; font-size: 13px; font-weight: 500; }
+.comp-share {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 /* === REVIEWS === */
 .review {
-  background: rgba(255,255,255,0.03); border-left: 3px solid var(--border);
-  border-radius: 6px; padding: 10px 12px; margin-bottom: 8px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border-left: 3px solid var(--border);
+  position: relative;
 }
-.review.good { border-left-color: var(--success); }
-.review.mid { border-left-color: var(--accent2); }
-.review.bad { border-left-color: var(--warn); }
-.review-stars { font-size: 12px; color: var(--accent2); margin-bottom: 4px; }
-.review-text { font-size: 13px; line-height: 1.4; }
-.review-source { font-size: 11px; color: var(--dim); margin-top: 4px; }
+.review.good { border-left-color: var(--success); background: rgba(0,230,118,0.04); }
+.review.mid { border-left-color: var(--gold); background: rgba(255,201,60,0.04); }
+.review.bad { border-left-color: var(--warn); background: rgba(255,92,122,0.04); }
+.review-stars {
+  font-size: 12px;
+  color: var(--gold);
+  margin-bottom: 6px;
+  letter-spacing: 2px;
+}
+.review-text { font-size: 13px; line-height: 1.5; color: var(--text); }
+.review-source {
+  font-size: 11px;
+  color: var(--text-mute);
+  margin-top: 8px;
+  font-family: var(--font-mono);
+}
+
 /* === LOG === */
-.log { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; }
-.log-item { display: flex; gap: 8px; font-size: 12px; line-height: 1.4; }
-.log-day { color: var(--dim); font-family: ui-monospace, monospace; font-size: 10px; min-width: 36px; padding-top: 1px; }
+.log { display: flex; flex-direction: column; gap: 8px; }
+.log-item {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  align-items: flex-start;
+}
+.log-day {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-mute);
+  min-width: 40px;
+  padding-top: 2px;
+  letter-spacing: 0.02em;
+}
 .log-info { color: var(--text); }
 .log-success { color: var(--success); }
 .log-warning { color: var(--warn); }
-.log-event { color: var(--purple); }
+.log-event { color: var(--accent-2); }
+
+/* === TABS === */
+.tabs {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(10, 10, 20, 0.75);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 4px calc(10px + env(safe-area-inset-bottom));
+  z-index: 50;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-mute);
+  padding: 6px 4px;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: color 250ms;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  position: relative;
+}
+.tab.active { color: var(--accent); }
+.tab.active::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 0 0 2px 2px;
+  box-shadow: 0 0 16px var(--accent);
+}
+.tab-icon { display: flex; align-items: center; justify-content: center; height: 20px; }
+.tab.active .tab-icon { filter: drop-shadow(0 0 8px var(--accent)); }
+
 /* === MODAL === */
 .modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100;
-  display: flex; align-items: center; justify-content: center; padding: 20px;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
   animation: fadeIn 200ms;
 }
 .modal {
-  background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
-  padding: 24px; max-width: 400px; width: 100%; max-height: 85vh; overflow-y: auto;
-  animation: slideUp 250ms;
+  background: var(--surface-solid);
+  border: 1px solid var(--border-hi);
+  border-radius: 24px;
+  padding: 28px;
+  max-width: 400px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: slideUp 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 40px 80px -20px rgba(0,0,0,0.8);
+  position: relative;
 }
-.modal h2 { font-size: 20px; margin-bottom: 8px; }
-.modal p { font-size: 14px; color: var(--dim); line-height: 1.5; margin-bottom: 16px; }
+.modal::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+.modal h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+}
+.modal p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-/* === MISC === */
-.pill { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
-.pill.success { background: rgba(0,230,118,0.15); color: var(--success); }
-.pill.warn { background: rgba(255,82,82,0.15); color: var(--warn); }
-.pill.info { background: rgba(0,217,255,0.15); color: var(--accent); }
-.empty { text-align: center; padding: 32px 16px; color: var(--dim); font-size: 13px; line-height: 1.5; }
-.divider { height: 1px; background: var(--border); margin: 16px 0; }
+@keyframes slideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* === EMPTY === */
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-mute);
+  font-size: 13px;
+  line-height: 1.6;
+  font-family: var(--font-mono);
+}
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-hi), transparent);
+  margin: 18px 0;
+}
+.pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.pill.live {
+  background: rgba(0,230,118,0.15);
+  color: var(--success);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* === PRICE DISPLAY === */
+.price-display {
+  font-family: var(--font-mono);
+  font-size: 44px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  text-align: center;
+  margin: 16px 0;
+  background: linear-gradient(135deg, #F0F0F8, #8A8AA0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 </style>
 </head>
 <body>
@@ -151,99 +576,88 @@ html, body {
 
 <script>
 // ============================================================
-// === CONSTANTS ===
+// === ICONS (SVG) ===
+// ============================================================
+const ICON = {
+  home: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>',
+  rnd: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  market: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>',
+  review: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 6.5 7 .9-5 4.8 1.2 7L12 18l-6.2 3.2L7 14.2 2 9.4l7-.9z"/></svg>',
+  settings: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M4.2 4.2l4.3 4.3M15.5 15.5l4.3 4.3M1 12h6M17 12h6M4.2 19.8l4.3-4.3M15.5 8.5l4.3-4.3"/></svg>',
+  play: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg>',
+  pause: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>',
+  check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>',
+  lock: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/></svg>',
+  spinner: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a10 10 0 0 1 10 10"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/></path></svg>',
+  plus: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+};
+
+// ============================================================
+// === DATA ===
 // ============================================================
 const FEATURES = [
-  // Era 1 — 1995
   { id:'cli',   name:'Command Line', cost:0,   days:0,  effect:5,  era:1, desc:'Baseline OS.' },
-  { id:'gui',   name:'GUI',          cost:100, days:30, effect:20, era:1, desc:'Antarmuka grafis. Wajib.' },
+  { id:'gui',   name:'GUI',          cost:100, days:30, effect:20, era:1, desc:'Antarmuka grafis.' },
   { id:'fs',    name:'File System',  cost:80,  days:20, effect:10, era:1, desc:'Manajemen file.' },
   { id:'multi', name:'Multitasking', cost:150, days:45, effect:15, era:1, desc:'Jalankan banyak app.', requires:['gui'] },
-  // Era 2 — 1996
   { id:'net',   name:'Network',      cost:200, days:60, effect:25, era:2, desc:'Koneksi jaringan.', requires:['fs'] },
   { id:'pnp',   name:'Plug & Play',  cost:180, days:50, effect:20, era:2, desc:'Hardware otomatis.', requires:['gui'] },
   { id:'media', name:'Multimedia',   cost:220, days:70, effect:20, era:2, desc:'Audio & gambar.', requires:['gui'] },
-  // Era 3 — 1997
   { id:'browser', name:'Browser',    cost:300, days:90, effect:30, era:3, desc:'Jelajah web.', requires:['net'] },
   { id:'email',   name:'Email',      cost:150, days:40, effect:15, era:3, desc:'Surat elektronik.', requires:['net'] },
   { id:'sec',     name:'Security',   cost:250, days:80, effect:20, era:3, desc:'Proteksi data.', requires:['fs'] },
-  // Era 4 — 1998
   { id:'video', name:'Video Player', cost:280, days:70, effect:25, era:4, desc:'Putar video.', requires:['media'] },
   { id:'audio', name:'Audio System', cost:200, days:50, effect:20, era:4, desc:'Suara jernih.', requires:['media'] },
   { id:'3d',    name:'3D Support',   cost:400, days:120, effect:35, era:4, desc:'Grafis 3D.', requires:['media'] },
-  // Era 5 — 1999
   { id:'server', name:'Server Edition', cost:500, days:150, effect:50, era:5, desc:'Untuk perusahaan.', requires:['sec','net'] },
-  { id:'entsec', name:'Enterprise Security', cost:350, days:100, effect:30, era:5, desc:'Keamanan tingkat tinggi.', requires:['sec'] },
+  { id:'entsec', name:'Enterprise Security', cost:350, days:100, effect:30, era:5, desc:'Keamanan tinggi.', requires:['sec'] },
 ];
 
 const ERA_NAMES = {
-  1: 'Era 1 · 1995 · Fondasi',
-  2: 'Era 2 · 1996 · Ekspansi',
-  3: 'Era 3 · 1997 · Internet',
-  4: 'Era 4 · 1998 · Multimedia',
-  5: 'Era 5 · 1999 · Server',
+  1:'Era 1 · 1995', 2:'Era 2 · 1996', 3:'Era 3 · 1997',
+  4:'Era 4 · 1998', 5:'Era 5 · 1999',
 };
 
 const COMPETITORS_INIT = {
-  microcorp:  { name:'MicroCorp',  color:'#FF5252', share:60, score:40, growth:2.0, interval:70 },
-  appletree:  { name:'AppleTree',  color:'#B388FF', share:25, score:50, growth:1.5, interval:120 },
-  linuxfree:  { name:'LinuxFree',  color:'#00E676', share:15, score:30, growth:1.0, interval:90 },
+  microcorp: { name:'MicroCorp', color:'#FF5C7A', share:60, score:40, growth:2.0, interval:70 },
+  appletree: { name:'AppleTree', color:'#B388FF', share:25, score:50, growth:1.5, interval:120 },
+  linuxfree: { name:'LinuxFree', color:'#00E676', share:15, score:30, growth:1.0, interval:90 },
 };
 
 const WORLD_EVENTS = [
   { day: 240,  msg:'Windows 95 dirilis. Pasar heboh!', type:'event' },
   { day: 480,  msg:'Internet mulai masuk rumah tangga.', type:'event' },
-  { day: 720,  msg:'Era dot-com dimulai. Investasi mengalir.', type:'success' },
-  { day: 1080, msg:'Krisis Y2K. Semua orang panik.', type:'warning' },
+  { day: 720,  msg:'Era dot-com dimulai.', type:'success' },
+  { day: 1080, msg:'Krisis Y2K. Semua panik.', type:'warning' },
   { day: 1440, msg:'Selamat datang di tahun 2000.', type:'success' },
 ];
 
 const RANDOM_EVENTS = [
-  {
-    id:'investor', minDay:60, weight:1,
-    title:'Investor Menawarkan Dana',
-    text:'Seorang investor ingin menanam modal $15.000. Sebagai gantinya, dia minta 10% saham perusahaanmu.',
+  { id:'investor', minDay:60, title:'Investor Menawarkan Dana', text:'Investor ingin menanam $15.000 untuk 10% saham perusahaanmu.',
     choices:[
-      { label:'Terima $15.000', effect:(s)=>{ s.money+=15000; s.equity=Math.max(50, (s.equity||100)-10); addLog('Investor masuk. Kamu kehilangan 10% saham.','event'); } },
+      { label:'Terima $15.000', effect:(s)=>{ s.money+=15000; s.equity=Math.max(50,(s.equity||100)-10); addLog('Investor masuk.','event'); } },
       { label:'Tolak', effect:(s)=>{ addLog('Kamu menolak investor.','info'); } }
-    ]
-  },
-  {
-    id:'bug', minDay:120, weight:1,
-    title:'Bug Kritis Ditemukan',
-    text:'Pengguna melaporkan bug serius di OS-mu. Review di forum mulai negatif.',
+    ]},
+  { id:'bug', minDay:120, title:'Bug Kritis Ditemukan', text:'Pengguna melaporkan bug serius di OS-mu.',
     choices:[
-      { label:'Perbaiki ($800, 10 hari)', effect:(s)=>{ s.money-=800; s.day+=10; s.reputation=Math.min(100,s.reputation+3); addLog('Bug diperbaiki. Reputasi naik.','success'); } },
-      { label:'Abaikan', effect:(s)=>{ s.reputation=Math.max(0,s.reputation-8); addLog('Bug diabaikan. Reputasi turun.','warning'); } }
-    ]
-  },
-  {
-    id:'resign', minDay:180, weight:1,
-    title:'Engineer Minta Naik Gaji',
-    text:'Engineer senior mengancam resign kalau gaji tidak dinaikkan.',
+      { label:'Perbaiki ($800, +10 hari)', effect:(s)=>{ s.money-=800; s.day+=10; s.reputation=Math.min(100,s.reputation+3); addLog('Bug diperbaiki.','success'); } },
+      { label:'Abaikan', effect:(s)=>{ s.reputation=Math.max(0,s.reputation-8); addLog('Bug diabaikan.','warning'); } }
+    ]},
+  { id:'resign', minDay:180, title:'Engineer Minta Naik Gaji', text:'Engineer senior mengancam resign.',
     choices:[
-      { label:'Naikkan gaji (+$200/bulan)', effect:(s)=>{ s.salaryBonus=(s.salaryBonus||0)+200; s.reputation=Math.min(100,s.reputation+5); addLog('Gaji dinaikkan. Tim senang.','success'); } },
-      { label:'Tolak', effect:(s)=>{ s.reputation=Math.max(0,s.reputation-5); if(Math.random()<0.4){ s.engineers=Math.max(1,s.engineers-1); addLog('Engineer resign!','warning'); } else { addLog('Engineer tetap tinggal, tapi kesal.','info'); } } }
-    ]
-  },
-  {
-    id:'magazine', minDay:240, weight:1,
-    title:'Wawancara Majalah',
-    text:'Majalah teknologi ingin mewawancarai kamu tentang OS-mu.',
+      { label:'Naikkan (+$200/bln)', effect:(s)=>{ s.salaryBonus=(s.salaryBonus||0)+200; s.reputation=Math.min(100,s.reputation+5); addLog('Gaji naik. Tim senang.','success'); } },
+      { label:'Tolak', effect:(s)=>{ s.reputation=Math.max(0,s.reputation-5); if(Math.random()<0.4){ s.engineers=Math.max(1,s.engineers-1); addLog('Engineer resign!','warning'); } else { addLog('Engineer kesal.','info'); } } }
+    ]},
+  { id:'magazine', minDay:240, title:'Wawancara Majalah', text:'Majalah teknologi ingin mewawancarai kamu.',
     choices:[
-      { label:'Terima', effect:(s)=>{ s.reputation=Math.min(100,s.reputation+10); addLog('Wawancara sukses. Reputasi naik.','success'); } },
-      { label:'Tolak', effect:(s)=>{ addLog('Kamu menolak wawancara.','info'); } }
-    ]
-  },
-  {
-    id:'piracy', minDay:360, weight:1,
-    title:'Pembajakan Marak',
-    text:'OS-mu dibajak di mana-mana. Penjualan turun.',
+      { label:'Terima', effect:(s)=>{ s.reputation=Math.min(100,s.reputation+10); addLog('Wawancara sukses.','success'); } },
+      { label:'Tolak', effect:(s)=>{ addLog('Kamu menolak.','info'); } }
+    ]},
+  { id:'piracy', minDay:360, title:'Pembajakan Marak', text:'OS-mu dibajak di mana-mana.',
     choices:[
-      { label:'Kampanye anti-pembajakan ($1.000)', effect:(s)=>{ s.money-=1000; addLog('Kampanye jalan. Pembajakan turun.','success'); } },
-      { label:'Biarkan', effect:(s)=>{ s.piracy=(s.piracy||0)+0.15; addLog('Pembajakan naik. Revenue -15%.','warning'); } }
-    ]
-  },
+      { label:'Kampanye ($1.000)', effect:(s)=>{ s.money-=1000; addLog('Kampanye jalan.','success'); } },
+      { label:'Biarkan', effect:(s)=>{ s.piracy=(s.piracy||0)+0.15; addLog('Pembajakan naik.','warning'); } }
+    ]},
 ];
 
 const REVIEW_TEMPLATES = {
@@ -251,7 +665,7 @@ const REVIEW_TEMPLATES = {
     { text:'OS ini revolusioner! Tidak ada yang seperti ini.', src:'TechDaily' },
     { text:'Wajib beli untuk siapa saja yang serius.', src:'PCWorld' },
     { text:'Masa depan komputasi sudah tiba.', src:'Wired' },
-    { text:'Kualitas luar biasa. Anggap saja mahal.', src:'Byte Magazine' },
+    { text:'Kualitas luar biasa.', src:'Byte Magazine' },
     { text:'Kompetitor harus waspada.', src:'InfoWorld' },
   ],
   mid: [
@@ -273,7 +687,7 @@ const REVIEW_TEMPLATES = {
 // ============================================================
 // === STATE ===
 // ============================================================
-const SAVE_KEY = 'os-tycoon-save-v2';
+const SAVE_KEY = 'os-tycoon-save-v3';
 
 function defaultState() {
   const features = {};
@@ -288,34 +702,13 @@ function defaultState() {
   });
 
   return {
-    money: 5000,
-    day: 0,
-    osScore: 5,
-    osShare: 0,
-    osPrice: 99,
-    osVersion: '1.0',
-    osName: 'MyOS',
-    features,
-    researching: null,
-    releasedFeatures: ['cli'],
-    history: [],
-    log: [{ day:0, msg:'Selamat datang di OS Tycoon!', type:'info' }],
-    running: true,
-    triggeredWorld: [],
-    triggeredRandom: [],
-    competitors,
-    engineers: 1,
-    reputation: 50,
-    equity: 100,
-    salaryBonus: 0,
-    piracy: 0,
-    lastReviews: null,
-    lastRevenue: 0,
-    marketing: 0,
-    gameOver: false,
-    showModal: null,
-    tab: 'dashboard',
-    speed: 1,
+    money: 5000, day: 0, osScore: 5, osShare: 0, osPrice: 99,
+    osVersion: '1.0', features, researching: null, releasedFeatures: ['cli'],
+    history: [], log: [{ day:0, msg:'Selamat datang di OS Tycoon!', type:'info' }],
+    running: true, triggeredWorld: [], triggeredRandom: [], competitors,
+    engineers: 1, reputation: 50, equity: 100, salaryBonus: 0, piracy: 0,
+    lastReviews: null, lastRevenue: 0, marketing: 0, gameOver: false,
+    showModal: null, tab: 'dashboard', speed: 1, prevMoney: 5000,
   };
 }
 
@@ -326,13 +719,11 @@ function loadState() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
     const s = JSON.parse(raw);
-    // migration guard: pastikan field wajib ada
     if (typeof s.day !== 'number') return null;
     s.showModal = null;
     return s;
   } catch(e) { return null; }
 }
-
 function saveState() {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e) {}
 }
@@ -348,7 +739,6 @@ function fmtMoney(n) {
   if (a >= 1e3) return sign + '$' + (a/1e3).toFixed(1) + 'k';
   return sign + '$' + a.toFixed(0);
 }
-
 function fmtDate(day) {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const year = 1995 + Math.floor(day/360);
@@ -356,18 +746,16 @@ function fmtDate(day) {
   const d = (day%30)+1;
   return d + ' ' + months[mi] + ' ' + year;
 }
-
 function bumpVersion(v) {
   const p = v.split('.');
   return p[0] + '.' + (Number(p[1]||0)+1);
 }
-
 function addLog(msg, type) {
   state.log.push({ day: state.day, msg, type: type||'info' });
   if (state.log.length > 60) state.log = state.log.slice(-60);
 }
-
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 // ============================================================
 // === SIMULATION ===
@@ -392,16 +780,11 @@ function releaseOS() {
     const f = FEATURES.find(x => x.id === id);
     if (f) score += f.effect;
   });
-  // skor dipengaruhi reputasi
   score = Math.round(score * (0.7 + state.reputation/200));
   state.osScore = score;
   state.releasedFeatures = done;
   state.osVersion = bumpVersion(state.osVersion);
-
-  // generate reviews
-  const reviews = generateReviews(score);
-  state.lastReviews = { version: state.osVersion, score, reviews };
-
+  state.lastReviews = { version: state.osVersion, score, reviews: generateReviews(score) };
   addLog('Rilis OS v' + state.osVersion + ' — skor ' + score, 'success');
   state.tab = 'reviews';
   saveState(); render();
@@ -418,47 +801,41 @@ function generateReviews(score) {
   const out = [];
   for (let i=0; i<count; i++) {
     const t = shuffled[i % shuffled.length];
-    const variation = Math.random() < 0.3 ? clamp(stars + (Math.random()<0.5?-1:1),1,5) : stars;
-    out.push({ stars: variation, text: t.text, src: t.src });
+    const v = Math.random() < 0.3 ? clamp(stars + (Math.random()<0.5?-1:1),1,5) : stars;
+    out.push({ stars: v, text: t.text, src: t.src });
   }
   return out;
 }
 
-function setPrice(p) {
-  state.osPrice = clamp(p, 20, 500);
-  saveState(); render();
-}
+function setPrice(p) { state.osPrice = clamp(p, 20, 500); saveState(); render(); }
 
 function runMarketing(cost) {
-  if (state.money < cost) { addLog('Uang tidak cukup untuk marketing.', 'warning'); render(); return; }
+  if (state.money < cost) { addLog('Uang tidak cukup.', 'warning'); render(); return; }
   state.money -= cost;
-  const boost = cost / 5000; // 5000 = +1 share point multiplier
-  state.marketing += boost;
+  state.marketing += cost / 5000;
   state.reputation = Math.min(100, state.reputation + 2);
-  addLog('Marketing campaign dijalankan (-' + fmtMoney(cost) + ')', 'success');
+  addLog('Marketing dijalankan (-' + fmtMoney(cost) + ')', 'success');
   saveState(); render();
 }
 
 function hireEngineer() {
   const cost = 500 * state.engineers;
-  if (state.money < cost) { addLog('Uang tidak cukup untuk rekrut.', 'warning'); render(); return; }
+  if (state.money < cost) { addLog('Uang tidak cukup.', 'warning'); render(); return; }
   state.money -= cost;
   state.engineers++;
-  addLog('Rekrut engineer baru. Total: ' + state.engineers, 'success');
+  addLog('Rekrut engineer. Total: ' + state.engineers, 'success');
   saveState(); render();
 }
 
 function tickDay() {
   if (state.gameOver) return;
+  state.prevMoney = state.money;
   state.day++;
 
-  // salary bulanan
   if (state.day % 30 === 0) {
-    const totalSalary = state.engineers * 300 + (state.salaryBonus||0);
-    state.money -= totalSalary;
+    state.money -= state.engineers * 300 + (state.salaryBonus||0);
   }
 
-  // R&D progress
   if (state.researching) {
     state.researching.daysLeft--;
     if (state.researching.daysLeft <= 0) {
@@ -466,7 +843,6 @@ function tickDay() {
       state.features[f.id] = 'done';
       addLog('R&D selesai: ' + f.name, 'success');
       state.researching = null;
-      // unlock
       FEATURES.forEach(x => {
         if (x.requires && x.requires.includes(f.id) && state.features[x.id] === 'locked') {
           if (x.requires.every(r => state.features[r] === 'done')) state.features[x.id] = 'available';
@@ -475,7 +851,6 @@ function tickDay() {
     }
   }
 
-  // revenue
   let revenue = 0;
   if (state.releasedFeatures.length > 2) {
     const scoreFactor = state.osScore / 100;
@@ -487,7 +862,6 @@ function tickDay() {
     revenue = Math.max(0, Math.round(base * state.osPrice * 8));
     state.money += revenue;
 
-    // pangsa naik
     if (state.day % 7 === 0) {
       const target = clamp(state.osScore * 0.5 * (0.7 + state.reputation/200), 0, 60);
       const speed = 0.05 + state.marketing * 0.02;
@@ -498,21 +872,17 @@ function tickDay() {
   }
   state.lastRevenue = revenue;
 
-  // kompetitor rilis
   Object.keys(state.competitors).forEach(k => {
     const c = state.competitors[k];
     if (state.day - c.lastRelease >= c.interval) {
       c.lastRelease = state.day;
-      c.score += Math.round(c.growth * (2 + Math.random() * 3));
-      c.score = Math.min(c.score, 200);
+      c.score = Math.min(c.score + Math.round(c.growth * (2 + Math.random() * 3)), 200);
       if (Math.random() < 0.3) addLog('📢 ' + c.name + ' merilis OS baru!', 'warning');
     }
   });
 
-  // recalc pangsa kompetitor (share of remaining)
   recalcMarketShare();
 
-  // world events
   WORLD_EVENTS.forEach((ev, i) => {
     if (state.day >= ev.day && !state.triggeredWorld.includes(i)) {
       state.triggeredWorld.push(i);
@@ -520,7 +890,6 @@ function tickDay() {
     }
   });
 
-  // random events
   if (state.day > 30 && Math.random() < 0.008 && !state.showModal) {
     const available = RANDOM_EVENTS.filter(e => state.day >= e.minDay && !state.triggeredRandom.includes(e.id));
     if (available.length) {
@@ -531,13 +900,11 @@ function tickDay() {
     }
   }
 
-  // history
   const snap = { day: state.day, share: state.osShare, revenue };
   Object.keys(state.competitors).forEach(k => { snap[k] = state.competitors[k].share; });
   state.history.push(snap);
   if (state.history.length > 180) state.history = state.history.slice(-180);
 
-  // endgame
   if (state.day >= 1800) {
     state.gameOver = true;
     state.running = false;
@@ -548,15 +915,11 @@ function tickDay() {
 }
 
 function recalcMarketShare() {
-  // pangsa pemain = osShare (sudah dihitung). Kompetitor ambil sisa.
-  const playerShare = state.osShare;
-  const remaining = 100 - playerShare;
-
+  const remaining = 100 - state.osShare;
   const weights = {};
   let total = 0;
   Object.keys(state.competitors).forEach(k => {
-    const c = state.competitors[k];
-    weights[k] = c.score * (0.8 + Math.random()*0.2);
+    weights[k] = state.competitors[k].score * (0.8 + Math.random()*0.2);
     total += weights[k];
   });
   Object.keys(state.competitors).forEach(k => {
@@ -564,11 +927,11 @@ function recalcMarketShare() {
   });
 }
 
-function resolveModal(choiceIdx) {
+function resolveModal(i) {
   const ev = RANDOM_EVENTS.find(e => e.id === state.showModal);
   if (!ev) { state.showModal = null; render(); return; }
-  const choice = ev.choices[choiceIdx];
-  if (choice && choice.effect) choice.effect(state);
+  const c = ev.choices[i];
+  if (c && c.effect) c.effect(state);
   state.showModal = null;
   state.running = true;
   saveState(); render();
@@ -579,34 +942,25 @@ function toggleRunning() {
   state.running = !state.running;
   saveState(); render();
 }
-
-function switchTab(t) {
-  state.tab = t;
-  render();
-}
-
+function switchTab(t) { state.tab = t; render(); }
 function resetGame() {
-  if (!confirm('Hapus semua progress dan mulai ulang?')) return;
+  if (!confirm('Hapus semua progress?')) return;
   localStorage.removeItem(SAVE_KEY);
   state = defaultState();
   saveState(); render();
 }
-
-function setSpeed(s) {
-  state.speed = s;
-  saveState(); render();
-}
+function setSpeed(s) { state.speed = s; saveState(); render(); }
 
 // ============================================================
 // === CHARTS ===
 // ============================================================
 function renderMultiChart() {
   const data = state.history;
-  if (data.length < 2) return '<div class="chart-empty">Rilis OS untuk melihat grafik pangsa pasar.</div>';
+  if (data.length < 2) return '<div class="chart-empty">Rilis OS untuk melihat grafik</div>';
 
-  const w = 320, h = 130, pad = 4;
+  const w = 340, h = 160, pad = 8;
   const series = [
-    { key:'share',  color:'#00D9FF', label:'Kamu' },
+    { key:'share', color:'#00E0FF', label:'Kamu', glow:true },
     ...Object.keys(state.competitors).map(k => ({
       key: k, color: state.competitors[k].color, label: state.competitors[k].name
     })),
@@ -615,7 +969,26 @@ function renderMultiChart() {
   let max = 10;
   data.forEach(d => series.forEach(s => { if (d[s.key] > max) max = d[s.key]; }));
 
+  let defs = '<defs>';
   let paths = '';
+
+  // gradient fill for player
+  defs += '<linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#00E0FF" stop-opacity="0.4"/>'
+    + '<stop offset="100%" stop-color="#00E0FF" stop-opacity="0"/>'
+    + '</linearGradient>'
+    + '<filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+  defs += '</defs>';
+
+  // player area fill
+  let playerPath = '';
+  data.forEach((d, i) => {
+    const x = pad + (i / (data.length - 1)) * (w - pad*2);
+    const y = h - pad - (d.share / max) * (h - pad*2);
+    playerPath += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  });
+  paths += '<path d="' + playerPath + 'L' + (w-pad) + ',' + (h-pad) + ' L' + pad + ',' + (h-pad) + ' Z" fill="url(#pg)"/>';
+
   series.forEach(s => {
     let path = '';
     data.forEach((d, i) => {
@@ -623,23 +996,20 @@ function renderMultiChart() {
       const y = h - pad - (d[s.key] / max) * (h - pad*2);
       path += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
     });
-    paths += '<path d="' + path + '" fill="none" stroke="' + s.color + '" stroke-width="2" stroke-linejoin="round"/>';
+    const filter = s.glow ? ' filter="url(#glow)"' : '';
+    const sw = s.glow ? 2.5 : 1.5;
+    const op = s.glow ? 1 : 0.75;
+    paths += '<path d="' + path + '" fill="none" stroke="' + s.color + '" stroke-width="' + sw + '" stroke-linejoin="round" stroke-linecap="round" opacity="' + op + '"' + filter + '/>';
   });
 
-  return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" class="chart">'
-    + '<defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">'
-    + '<stop offset="0%" stop-color="#00D9FF" stop-opacity="0.25"/>'
-    + '<stop offset="100%" stop-color="#00D9FF" stop-opacity="0"/>'
-    + '</linearGradient></defs>'
-    + paths
-    + '</svg>';
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" class="chart">' + defs + paths + '</svg>';
 }
 
 function renderRevenueChart() {
   const data = state.history;
-  if (data.length < 2) return '<div class="chart-empty chart-sm">Belum ada revenue.</div>';
+  if (data.length < 2) return '<div class="chart-empty">Belum ada revenue</div>';
 
-  const w = 320, h = 90, pad = 4;
+  const w = 340, h = 110, pad = 8;
   const max = Math.max(100, ...data.map(d => d.revenue || 0));
 
   let path = '';
@@ -649,13 +1019,16 @@ function renderRevenueChart() {
     path += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
   });
 
-  return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" class="chart chart-sm">'
-    + '<defs><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1">'
-    + '<stop offset="0%" stop-color="#00E676" stop-opacity="0.35"/>'
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" class="chart">'
+    + '<defs>'
+    + '<linearGradient id="rg" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#00E676" stop-opacity="0.5"/>'
     + '<stop offset="100%" stop-color="#00E676" stop-opacity="0"/>'
-    + '</linearGradient></defs>'
+    + '</linearGradient>'
+    + '<filter id="glowg"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
+    + '</defs>'
     + '<path d="' + path + 'L' + (w-pad) + ',' + (h-pad) + ' L' + pad + ',' + (h-pad) + ' Z" fill="url(#rg)"/>'
-    + '<path d="' + path + '" fill="none" stroke="#00E676" stroke-width="2" stroke-linejoin="round"/>'
+    + '<path d="' + path + '" fill="none" stroke="#00E676" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" filter="url(#glowg)"/>'
     + '</svg>';
 }
 
@@ -663,58 +1036,58 @@ function renderRevenueChart() {
 // === RENDER ===
 // ============================================================
 function renderHeader() {
+  const moneyClass = state.money > state.prevMoney ? 'up' : state.money < state.prevMoney ? 'down' : '';
   return '<header class="header">'
-    + '<div class="hstack">'
-    + '<span class="brand">OS TYCOON</span>'
-    + '<span class="date">' + fmtDate(state.day) + '</span>'
+    + '<div class="brand-block">'
+    + '<div class="brand">OS TYCOON</div>'
+    + '<div class="date-row">' + fmtDate(state.day) + '</div>'
     + '</div>'
-    + '<div class="hstack">'
-    + '<span class="money">' + fmtMoney(state.money) + '</span>'
-    + '<button class="play-btn" data-act="toggle">' + (state.running ? 'II' : '▶') + '</button>'
+    + '<div class="money-block">'
+    + '<span class="money ' + moneyClass + '">' + fmtMoney(state.money) + '</span>'
+    + '<button class="play-btn" data-act="toggle">' + (state.running ? ICON.pause : ICON.play) + '</button>'
     + '</div>'
     + '</header>';
 }
 
 function renderDashboard() {
-  const playerShare = state.osShare;
-  const comps = Object.keys(state.competitors).map(k => ({
-    ...state.competitors[k], key:k
-  }));
-
+  const comps = Object.keys(state.competitors).map(k => ({ ...state.competitors[k], key:k }));
   return ''
     + '<section class="card">'
     + '<div class="card-title">Pangsa Pasar</div>'
-    + renderMultiChart()
-    + '<div class="stats-row">'
-    + '<div class="stat"><span class="stat-label">Kamu</span><span class="stat-value accent">' + playerShare.toFixed(1) + '%</span></div>'
-    + comps.map(c => '<div class="stat"><span class="stat-label" style="color:' + c.color + '">' + c.name + '</span><span class="stat-value">' + c.share.toFixed(1) + '%</span></div>').join('')
-    + '</div>'
-    + '</section>'
-
-    + '<section class="card">'
-    + '<div class="card-title">Revenue Harian</div>'
-    + renderRevenueChart()
-    + '<div class="stats-row">'
-    + '<div class="stat"><span class="stat-label">Hari ini</span><span class="stat-value success">' + fmtMoney(state.lastRevenue) + '</span></div>'
-    + '<div class="stat"><span class="stat-label">Reputasi</span><span class="stat-value">' + Math.round(state.reputation) + '</span></div>'
+    + '<div class="chart-wrap">' + renderMultiChart() + '</div>'
+    + '<div class="stats-grid">'
+    + '<div class="stat"><span class="stat-label">Kamu</span><span class="stat-value accent">' + state.osShare.toFixed(1) + '%</span></div>'
+    + '<div class="stat"><span class="stat-label">Skor</span><span class="stat-value">' + state.osScore + '</span></div>'
     + '<div class="stat"><span class="stat-label">Versi</span><span class="stat-value">v' + state.osVersion + '</span></div>'
     + '</div>'
     + '</section>'
 
     + '<section class="card">'
-    + '<div class="card-title">Aksi Cepat</div>'
-    + '<button class="btn primary" data-act="release" style="margin-bottom:8px">RILIS OS v' + bumpVersion(state.osVersion) + '</button>'
-    + '<div class="btn-row">'
-    + '<button class="btn" data-act="goto-rnd">R&D</button>'
-    + '<button class="btn" data-act="goto-market">Pasar</button>'
+    + '<div class="card-title">Revenue Harian</div>'
+    + '<div class="chart-wrap sm">' + renderRevenueChart() + '</div>'
+    + '<div class="stats-grid">'
+    + '<div class="stat"><span class="stat-label">Hari ini</span><span class="stat-value success">' + fmtMoney(state.lastRevenue) + '</span></div>'
+    + '<div class="stat"><span class="stat-label">Reputasi</span><span class="stat-value">' + Math.round(state.reputation) + '</span></div>'
+    + '<div class="stat"><span class="stat-label">Engineer</span><span class="stat-value">' + state.engineers + '</span></div>'
     + '</div>'
+    + '</section>'
+
+    + '<button class="btn primary" data-act="release" style="margin-bottom:14px">RILIS OS v' + bumpVersion(state.osVersion) + '</button>'
+
+    + '<section class="card">'
+    + '<div class="card-title">Pesaing</div>'
+    + comps.map(c => '<div class="comp-row">'
+        + '<span class="comp-dot" style="background:' + c.color + ';color:' + c.color + '"></span>'
+        + '<span class="comp-name">' + c.name + '</span>'
+        + '<span class="comp-share">' + c.share.toFixed(1) + '%</span>'
+      + '</div>').join('')
     + '</section>'
 
     + '<section class="card">'
     + '<div class="card-title">Log</div>'
     + '<div class="log">'
     + state.log.slice(-6).reverse().map(l =>
-        '<div class="log-item log-' + l.type + '"><span class="log-day">D' + l.day + '</span><span>' + l.msg + '</span></div>'
+        '<div class="log-item log-' + l.type + '"><span class="log-day">D' + l.day + '</span><span>' + esc(l.msg) + '</span></div>'
       ).join('')
     + '</div>'
     + '</section>';
@@ -723,13 +1096,13 @@ function renderDashboard() {
 function renderRnD() {
   let html = '<section class="card">'
     + '<div class="card-title">Tim</div>'
-    + '<div class="stats-row">'
+    + '<div class="stats-grid">'
     + '<div class="stat"><span class="stat-label">Engineer</span><span class="stat-value">' + state.engineers + '</span></div>'
-    + '<div class="stat"><span class="stat-label">Gaji/bulan</span><span class="stat-value">' + fmtMoney(state.engineers*300 + (state.salaryBonus||0)) + '</span></div>'
+    + '<div class="stat"><span class="stat-label">Gaji/bln</span><span class="stat-value">' + fmtMoney(state.engineers*300 + (state.salaryBonus||0)) + '</span></div>'
     + '<div class="stat"><span class="stat-label">Reputasi</span><span class="stat-value">' + Math.round(state.reputation) + '</span></div>'
     + '</div>'
     + '<div class="divider"></div>'
-    + '<button class="btn" data-act="hire">Rekrut Engineer (+$' + (500*state.engineers) + ')</button>'
+    + '<button class="btn" data-act="hire">' + ICON.plus + ' Rekrut Engineer ($' + (500*state.engineers) + ')</button>'
     + '</section>';
 
   if (state.researching) {
@@ -737,28 +1110,25 @@ function renderRnD() {
     const pct = (1 - state.researching.daysLeft / state.researching.total) * 100;
     html += '<section class="card">'
       + '<div class="card-title">Sedang Diteliti</div>'
-      + '<div style="font-size:14px;font-weight:500">' + f.name + '</div>'
+      + '<div style="font-size:14px;font-weight:600;margin-bottom:4px">' + f.name + '</div>'
       + '<div class="progress"><div class="progress-bar" style="width:' + pct + '%"></div></div>'
-      + '<div class="card-sub">' + state.researching.daysLeft + ' hari lagi</div>'
+      + '<div style="font-size:11px;color:var(--text-dim);font-family:var(--font-mono);margin-top:8px">' + state.researching.daysLeft + ' hari lagi</div>'
       + '</section>';
   }
 
-  // group by era
   const eras = {};
   FEATURES.forEach(f => { if (!eras[f.era]) eras[f.era] = []; eras[f.era].push(f); });
 
-  html += '<section class="card">'
-    + '<div class="card-title">Tech Tree</div>';
+  html += '<section class="card"><div class="card-title">Tech Tree</div>';
   Object.keys(eras).sort().forEach(era => {
-    html += '<div class="era-header">' + ERA_NAMES[era] + '</div>';
-    html += '<div class="feature-list">';
+    html += '<div class="era-header">' + ERA_NAMES[era] + '</div><div class="feature-list">';
     eras[era].forEach(f => {
       const st = state.features[f.id];
       const dis = st !== 'available' ? 'disabled' : '';
       let icon = '';
-      if (st === 'done') icon = '✓';
-      else if (st === 'locked') icon = '🔒';
-      else if (st === 'researching') icon = '⋯';
+      if (st === 'done') icon = ICON.check;
+      else if (st === 'locked') icon = ICON.lock;
+      else if (st === 'researching') icon = ICON.spinner;
       html += '<button class="feature-btn ' + st + '" ' + dis + ' data-act="research" data-id="' + f.id + '">'
         + '<div class="feature-name">' + f.name + '</div>'
         + '<div class="feature-cost">$' + f.cost + ' · ' + f.days + 'd · +' + f.effect + '</div>'
@@ -777,21 +1147,19 @@ function renderMarket() {
     + '<section class="card">'
     + '<div class="card-title">Pesaing</div>'
     + comps.map(c => '<div class="comp-row">'
-        + '<span class="comp-dot" style="background:' + c.color + '"></span>'
+        + '<span class="comp-dot" style="background:' + c.color + ';color:' + c.color + '"></span>'
         + '<span class="comp-name">' + c.name + '</span>'
         + '<span class="comp-share">' + c.share.toFixed(1) + '%</span>'
       + '</div>').join('')
-    + '<div class="card-sub">Skor OS kompetitor naik seiring waktu. Kamu harus terus berinovasi.</div>'
     + '</section>'
 
     + '<section class="card">'
     + '<div class="card-title">Harga OS</div>'
-    + '<div style="font-size:32px;font-family:ui-monospace,monospace;font-weight:700;text-align:center;margin:12px 0">$' + state.osPrice + '</div>'
+    + '<div class="price-display">$' + state.osPrice + '</div>'
     + '<div class="btn-row">'
     + '<button class="btn" data-act="price-down">- $10</button>'
     + '<button class="btn" data-act="price-up">+ $10</button>'
     + '</div>'
-    + '<div class="card-sub">Harga rendah = adopsi lebih cepat, revenue per unit lebih kecil.</div>'
     + '</section>'
 
     + '<section class="card">'
@@ -799,7 +1167,6 @@ function renderMarket() {
     + '<button class="btn" data-act="mkt-500" style="margin-bottom:8px">Iklan kecil · $500</button>'
     + '<button class="btn" data-act="mkt-2000" style="margin-bottom:8px">Kampanye · $2.000</button>'
     + '<button class="btn" data-act="mkt-5000">Blitz · $5.000</button>'
-    + '<div class="card-sub">Marketing menaikkan reputasi dan mempercepat kenaikan pangsa.</div>'
     + '</section>';
 }
 
@@ -808,27 +1175,28 @@ function renderReviews() {
     return '<div class="empty">Belum ada review.<br>Rilis OS pertamamu untuk melihat reaksi pasar.</div>';
   }
   const r = state.lastReviews;
-  const stars = '★'.repeat(clamp(Math.round(r.score/20),1,5)) + '☆'.repeat(5 - clamp(Math.round(r.score/20),1,5));
+  const s = clamp(Math.round(r.score/20),1,5);
+  const stars = '★'.repeat(s) + '☆'.repeat(5 - s);
   return ''
     + '<section class="card">'
     + '<div class="card-title">Review v' + r.version + '</div>'
-    + '<div style="font-size:24px;color:var(--accent2);margin-bottom:4px">' + stars + '</div>'
-    + '<div class="card-sub" style="margin-bottom:16px">Skor OS: ' + r.score + '</div>'
+    + '<div style="font-size:28px;color:var(--gold);letter-spacing:4px;margin-bottom:4px">' + stars + '</div>'
+    + '<div style="font-size:11px;color:var(--text-dim);font-family:var(--font-mono)">Skor OS: ' + r.score + '</div>'
+    + '</section>'
     + r.reviews.map(rv =>
         '<div class="review ' + (rv.stars>=4?'good':rv.stars>=3?'mid':'bad') + '">'
         + '<div class="review-stars">' + '★'.repeat(rv.stars) + '☆'.repeat(5-rv.stars) + '</div>'
-        + '<div class="review-text">"' + rv.text + '"</div>'
+        + '<div class="review-text">"' + esc(rv.text) + '"</div>'
         + '<div class="review-source">— ' + rv.src + '</div>'
         + '</div>'
-      ).join('')
-    + '</section>';
+      ).join('');
 }
 
 function renderSettings() {
   return ''
     + '<section class="card">'
     + '<div class="card-title">Statistik</div>'
-    + '<div class="stats-row">'
+    + '<div class="stats-grid">'
     + '<div class="stat"><span class="stat-label">Hari</span><span class="stat-value">' + state.day + '</span></div>'
     + '<div class="stat"><span class="stat-label">Equity</span><span class="stat-value">' + state.equity + '%</span></div>'
     + '<div class="stat"><span class="stat-label">Versi</span><span class="stat-value">v' + state.osVersion + '</span></div>'
@@ -847,22 +1215,21 @@ function renderSettings() {
     + '<section class="card">'
     + '<div class="card-title">Bahaya</div>'
     + '<button class="btn danger" data-act="reset">Reset Game</button>'
-    + '<div class="card-sub">Menghapus semua progress. Tidak bisa dibatalkan.</div>'
     + '</section>'
 
     + '<section class="card">'
     + '<div class="card-title">Tentang</div>'
-    + '<div class="card-sub">OS Tycoon v0.2<br>Dibuat dengan HTML + CSS + JS.<br>Data disimpan di browser HP kamu.</div>'
+    + '<div style="font-size:12px;color:var(--text-dim);line-height:1.6">OS Tycoon v0.3<br>1 file HTML · data di browser kamu</div>'
     + '</section>';
 }
 
 function renderTabs() {
   const tabs = [
-    { id:'dashboard', label:'Home',    icon:'◆' },
-    { id:'rnd',       label:'R&D',     icon:'⚙' },
-    { id:'market',    label:'Pasar',   icon:'📊' },
-    { id:'reviews',   label:'Review',  icon:'★' },
-    { id:'settings',  label:'Setelan', icon:'⚙' },
+    { id:'dashboard', label:'Home',    icon:ICON.home },
+    { id:'rnd',       label:'R&D',     icon:ICON.rnd },
+    { id:'market',    label:'Pasar',   icon:ICON.market },
+    { id:'reviews',   label:'Review',  icon:ICON.review },
+    { id:'settings',  label:'Setelan', icon:ICON.settings },
   ];
   return '<div class="tabs">'
     + tabs.map(t =>
@@ -878,15 +1245,13 @@ function renderModal() {
   if (!state.showModal) return '';
   const ev = RANDOM_EVENTS.find(e => e.id === state.showModal);
   if (!ev) return '';
-  return '<div class="modal-overlay">'
-    + '<div class="modal">'
+  return '<div class="modal-overlay"><div class="modal">'
     + '<h2>' + ev.title + '</h2>'
     + '<p>' + ev.text + '</p>'
     + ev.choices.map((c, i) =>
         '<button class="btn' + (i===0?' primary':'') + '" data-act="modal" data-i="' + i + '" style="margin-bottom:8px">' + c.label + '</button>'
       ).join('')
-    + '</div>'
-    + '</div>';
+    + '</div></div>';
 }
 
 function render() {
@@ -896,16 +1261,20 @@ function render() {
 
   let body = renderHeader();
   if (state.gameOver) {
-    body += '<div class="card"><div class="card-title">Permainan Selesai</div>'
-      + '<div style="font-size:32px;text-align:center;margin:16px 0">🏆</div>'
-      + '<div style="text-align:center;font-size:14px;line-height:1.6">'
-      + 'Kamu mengakhiri tahun 2000 dengan:<br>'
-      + '<strong style="color:var(--accent);font-size:20px">' + state.osShare.toFixed(1) + '% pangsa pasar</strong><br>'
-      + '<strong style="color:var(--success);font-size:20px">' + fmtMoney(state.money) + '</strong>'
+    body += '<section class="card">'
+      + '<div class="card-title">Permainan Selesai</div>'
+      + '<div style="text-align:center;font-size:48px;margin:16px 0">🏆</div>'
+      + '<div style="text-align:center;font-size:14px;line-height:1.8">'
+      + 'Kamu mengakhiri tahun 2000 dengan:<br><br>'
+      + '<strong style="color:var(--accent);font-size:26px;font-family:var(--font-mono)">' + state.osShare.toFixed(1) + '%</strong>'
+      + '<div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em">pangsa pasar</div>'
+      + '<br>'
+      + '<strong style="color:var(--success);font-size:26px;font-family:var(--font-mono)">' + fmtMoney(state.money) + '</strong>'
+      + '<div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em">total uang</div>'
       + '</div>'
       + '<div class="divider"></div>'
       + '<button class="btn primary" data-act="reset">Main Ulang</button>'
-      + '</div>';
+      + '</section>';
   } else {
     if (state.tab === 'dashboard') body += renderDashboard();
     else if (state.tab === 'rnd') body += renderRnD();
@@ -926,7 +1295,6 @@ document.body.addEventListener('click', function(e) {
   const el = e.target.closest('[data-act]');
   if (!el) return;
   const act = el.dataset.act;
-
   if (act === 'toggle') toggleRunning();
   else if (act === 'release') releaseOS();
   else if (act === 'research') startResearch(el.dataset.id);
@@ -936,8 +1304,6 @@ document.body.addEventListener('click', function(e) {
   else if (act === 'mkt-500') runMarketing(500);
   else if (act === 'mkt-2000') runMarketing(2000);
   else if (act === 'mkt-5000') runMarketing(5000);
-  else if (act === 'goto-rnd') switchTab('rnd');
-  else if (act === 'goto-market') switchTab('market');
   else if (act === 'tab') switchTab(el.dataset.tab);
   else if (act === 'modal') resolveModal(Number(el.dataset.i));
   else if (act === 'reset') resetGame();
@@ -945,10 +1311,9 @@ document.body.addEventListener('click', function(e) {
 });
 
 // ============================================================
-// === GAME LOOP ===
+// === LOOP ===
 // ============================================================
 let lastTick = Date.now();
-
 function loop() {
   if (state.running && !state.gameOver && !state.showModal) {
     const now = Date.now();
@@ -965,9 +1330,6 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-// ============================================================
-// === BOOT ===
-// ============================================================
 render();
 loop();
 </script>
