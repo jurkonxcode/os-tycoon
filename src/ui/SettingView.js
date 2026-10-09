@@ -83,4 +83,25 @@ export class SettingsView {
 
   _info(label, value) {
     return el("div", { class: "row row--between", style: "padding:6px 0;border-bottom:1px solid var(--color-border)" }, [
-      el("span",
+      el("span", { class: "text-muted", text: label }),
+      el("span", { class: "mono", text: value })
+    ]);
+  }
+
+  _btn(text, variant, onClick) {
+    return el("button", {
+      class: `btn ${variant === "primary" ? "btn--primary" : variant === "danger" ? "btn--danger" : "btn--ghost"}`,
+      type: "button",
+      text,
+      on: { click: onClick }
+    });
+  }
+
+  _notify(text, ok) {
+    this._bus.emit("notification:show", {
+      title: ok ? "Success" : "Error",
+      body: text,
+      type: ok ? "success" : "error"
+    });
+  }
+}
