@@ -1,0 +1,98 @@
+@media (max-width: 900px) {
+  .view-container { padding: var(--sp-4); }
+}
+
+@media (max-width: 720px) {
+  :root {
+    --sidebar-width: 0px;
+    --topbar-height: 52px;
+  }
+
+  .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 260px;
+    z-index: 900;
+    transform: translateX(-100%);
+    transition: transform var(--transition);
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.is-open { transform: translateX(0); }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 850;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition);
+  }
+  .sidebar-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .topbar { padding: 0 var(--sp-3); gap: var(--sp-3); }
+
+  .topbar__toggle { display: inline-flex !important; }
+
+  .stat__value { font-size: var(--fs-lg); }
+
+  .view-container { padding: var(--sp-4); }
+
+  .notification-stack {
+    top: auto;
+    bottom: var(--sp-4);
+    left: var(--sp-3);
+    right: var(--sp-3);
+    max-width: none;
+  }
+
+  /* Tables → cards */
+  .table--responsive thead { display: none; }
+  .table--responsive,
+  .table--responsive tbody,
+  .table--responsive tr,
+  .table--responsive td { display: block; width: 100%; }
+  .table--responsive tr {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    margin-bottom: var(--sp-2);
+    padding: var(--sp-2);
+    background: var(--color-bg-panel-2);
+  }
+  .table--responsive td {
+    border: none;
+    padding: 4px 0;
+    display: flex;
+    justify-content: space-between;
+    gap: var(--sp-3);
+  }
+  .table--responsive td::before {
+    content: attr(data-label);
+    color: var(--color-text-muted);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+}
+
+/* Toggle button hidden by default (only visible on mobile) */
+.topbar__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-bg-panel-2);
+  flex-shrink: 0;
+}
