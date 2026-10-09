@@ -1,9 +1,5 @@
 import { el } from "../utils/dom.js";
 
-/**
- * Temporary view for modules scheduled in later phases.
- * Displays honest information — no fake buttons.
- */
 export class PlaceholderView {
   constructor({ title, phase, description }) {
     this._title = title;
@@ -24,7 +20,7 @@ export class PlaceholderView {
           el("span", { class: "badge badge--amber", text: this._phase })
         ]),
         el("div", { class: "text-muted", text: this._description }),
-        el("div", { class: "dashboard__empty", text: "This module has no active features in Phase 1. Buttons are intentionally absent." })
+        el("div", { class: "dashboard__empty", text: "This module has no active features yet. Buttons are intentionally absent." })
       ])
     ]);
     container.appendChild(this._root);
