@@ -1,0 +1,23 @@
+# OS-specific
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Dependencies (if future build tooling is added)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build output
+dist/
+build/
+
+# Local testing
+.cache/
