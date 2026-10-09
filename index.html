@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0F0F1E">
+<title>OS Tycoon</title>
+<style>
+/* === RESET & THEME === */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg: #0F0F1E; --panel: #1A1A2E; --panel2: #20203A; --border: #2A2A40;
+  --text: #E8E8F0; --dim: #A0A0B0;
+  --accent: #00D9FF; --accent2: #FFB800;
+  --success: #00E676; --warn: #FF5252; --purple: #B388FF;
+}
+html, body {
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+  touch-action: manipulation; overflow-x: hidden;
+}
+/* === LAYOUT === */
+.app { max-width: 520px; margin: 0 auto; padding: 12px; padding-bottom: 90px; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 8px 0 12px; }
+.brand { font-weight: 700; letter-spacing: 1.5px; font-size: 13px; color: var(--accent); }
+.date { font-size: 11px; color: var(--dim); }
+.money { font-family: ui-monospace, monospace; font-size: 15px; font-weight: 600; }
+.hstack { display: flex; align-items: center; gap: 8px; }
+/* === NAV TABS === */
+.tabs {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(15,15,30,0.95); backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-around;
+  padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+  z-index: 10;
+}
+.tab {
+  flex: 1; background: none; border: none; color: var(--dim);
+  padding: 8px 4px; cursor: pointer; font-family: inherit;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  transition: color 150ms; font-size: 10px;
+}
+.tab.active { color: var(--accent); }
+.tab-icon { font-size: 16px; }
+/* === CARDS === */
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.card-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--dim); margin-bottom: 12px; font-weight: 600; }
+.card-sub { font-size: 11px; color: var(--dim); margin-top: 8px; }
+/* === CHART === */
+.chart { width: 100%; height: 130px; display: block; }
+.chart-sm { height: 90px; }
+.chart-empty { height: 130px; display: flex; align-items: center; justify-content: center; color: var(--dim); font-size: 12px; text-align: center; padding: 0 16px; }
+/* === STATS === */
+.stats-row { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.stat { flex: 1; min-width: 80px; display: flex; flex-direction: column; gap: 2px; }
+.stat-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value { font-family: ui-monospace, monospace; font-size: 15px; font-weight: 600; }
+.stat-value.accent { color: var(--accent); }
+.stat-value.success { color: var(--success); }
+.stat-value.warn { color: var(--warn); }
+/* === FEATURES === */
+.feature-list { display: flex; flex-direction: column; gap: 8px; }
+.era-header { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin: 12px 0 6px; }
+.feature-btn {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px; color: var(--text); text-align: left;
+  cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 4px;
+  transition: transform 120ms, border-color 120ms; font-family: inherit;
+}
+.feature-btn:active:not(:disabled) { transform: scale(0.98); }
+.feature-btn.available { border-color: var(--accent); }
+.feature-btn.locked { opacity: 0.35; cursor: not-allowed; }
+.feature-btn.done { opacity: 0.6; border-color: var(--success); }
+.feature-btn.researching { border-color: var(--accent2); }
+.feature-name { font-size: 14px; font-weight: 500; }
+.feature-cost { font-size: 11px; color: var(--dim); font-family: ui-monospace, monospace; }
+.feature-status { grid-row: 1 / 3; grid-column: 2; align-self: center; font-size: 14px; }
+/* === PROGRESS === */
+.progress { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+.progress-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width 300ms; }
+.progress-bar.warn { background: var(--accent2); }
+/* === BUTTONS === */
+.btn {
+  background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: transform 120ms, opacity 120ms;
+  width: 100%;
+}
+.btn:active:not(:disabled) { transform: scale(0.98); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary { background: var(--accent); color: #0F0F1E; border: none; padding: 14px; font-weight: 700; letter-spacing: 0.5px; }
+.btn.danger { background: var(--warn); color: #fff; border: none; }
+.btn.ghost { background: transparent; }
+.btn-row { display: flex; gap: 8px; }
+.play-btn { background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 12px; font-weight: 700; font-family: inherit; }
+.play-btn:active { transform: scale(0.94); }
+/* === COMPETITORS === */
+.comp-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.comp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.comp-name { flex: 1; font-size: 13px; }
+.comp-share { font-family: ui-monospace, monospace; font-size: 13px; font-weight: 600; }
+/* === REVIEWS === */
+.review {
+  background: rgba(255,255,255,0.03); border-left: 3px solid var(--border);
+  border-radius: 6px; padding: 10px 12px; margin-bottom: 8px;
+}
+.review.good { border-left-color: var(--success); }
+.review.mid { border-left-color: var(--accent2); }
+.review.bad { border-left-color: var(--warn); }
+.review-stars { font-size: 12px; color: var(--accent2); margin-bottom: 4px; }
+.review-text { font-size: 13px; line-height: 1.4; }
+.review-source { font-size: 11px; color: var(--dim); margin-top: 4px; }
+/* === LOG === */
+.log { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; }
+.log-item { display: flex; gap: 8px; font-size: 12px; line-height: 1.4; }
+.log-day { color: var(--dim); font-family: ui-monospace, monospace; font-size: 10px; min-width: 36px; padding-top: 1px; }
+.log-info { color: var(--text); }
+.log-success { color: var(--success); }
+.log-warning { color: var(--warn); }
+.log-event { color: var(--purple); }
+/* === MODAL === */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  animation: fadeIn 200ms;
+}
+.modal {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+  padding: 24px; max-width: 400px; width: 100%; max-height: 85vh; overflow-y: auto;
+  animation: slideUp 250ms;
+}
+.modal h2 { font-size: 20px; margin-bottom: 8px; }
+.modal p { font-size: 14px; color: var(--dim); line-height: 1.5; margin-bottom: 16px; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+/* === MISC === */
+.pill { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+.pill.success { background: rgba(0,230,118,0.15); color: var(--success); }
+.pill.warn { background: rgba(255,82,82,0.15); color: var(--warn); }
+.pill.info { background: rgba(0,217,255,0.15); color: var(--accent); }
+.empty { text-align: center; padding: 32px 16px; color: var(--dim); font-size: 13px; line-height: 1.5; }
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+<div id="tabs"></div>
+<div id="modal"></div>
+
+<script>
+// ============================================================
+// === CONSTANTS ===
+// ============================================================
+const FEATURES = [
+  // Era 1 — 1995
+  { id:'cli',   name:'Command Line', cost:0,   days:0,  effect:5,  era:1, desc:'Baseline OS.' },
+  { id:'gui',   name:'GUI',          cost:100, days:30, effect:20, era:1, desc:'Antarmuka grafis. Wajib.' },
+  { id:'fs',    name:'File System',  cost:80,  days:20, effect:10, era:1, desc:'Manajemen file.' },
+  { id:'multi', name:'Multitasking', cost:150, days:45, effect:15, era:1, desc:'Jalankan banyak app.', requires:['gui'] },
+  // Era 2 — 1996
+  { id:'net',   name:'Network',      cost:200, days:60, effect:25, era:2, desc:'Koneksi jaringan.', requires:['fs'] },
+  { id:'pnp',   name:'Plug & Play',  cost:180, days:50, effect:20, era:2, desc:'Hardware otomatis.', requires:['gui'] },
+  { id:'media', name:'Multimedia',   cost:220, days:70, effect:20, era:2, desc:'Audio & gambar.', requires:['gui'] },
+  // Era 3 — 1997
+  { id:'browser', name:'Browser',    cost:300, days:90, effect:30, era:3, desc:'Jelajah web.', requires:['net'] },
+  { id:'email',   name:'Email',      cost:150, days:40, effect:15, era:3, desc:'Surat elektronik.', requires:['net'] },
+  { id:'sec',     name:'Security',   cost:250, days:80, effect:20, era:3, desc:'Proteksi data.', requires:['fs'] },
+  // Era 4 — 1998
+  { id:'video', name:'Video Player', cost:280, days:70, effect:25, era:4, desc:'Putar video.', requires:['media'] },
+  { id:'audio', name:'Audio System', cost:200, days:50, effect:20, era:4, desc:'Suara jernih.', requires:['media'] },
+  { id:'3d',    name:'3D Support',   cost:400, days:120, effect:35, era:4, desc:'Grafis 3D.', requires:['media'] },
+  // Era 5 — 1999
+  { id:'server', name:'Server Edition', cost:500, days:150, effect:50, era:5, desc:'Untuk perusahaan.', requires:['sec','net'] },
+  { id:'entsec', name:'Enterprise Security', cost:350, days:100, effect:30, era:5, desc:'Keamanan tingkat tinggi.', requires:['sec'] },
+];
+
+const ERA_NAMES = {
+  1: 'Era 1 · 1995 · Fondasi',
+  2: 'Era 2 · 1996 · Ekspansi',
+  3: 'Era 3 · 1997 · Internet',
+  4: 'Era 4 · 1998 · Multimedia',
+  5: 'Era 5 · 1999 · Server',
+};
+
+const COMPETITORS_INIT = {
+  microcorp:  { name:'MicroCorp',  color:'#FF5252', share:60, score:40, growth:2.0, interval:70 },
+  appletree:  { name:'AppleTree',  color:'#B388FF', share:25, score:50, growth:1.5, interval:120 },
+  linuxfree:  { name:'LinuxFree',  color:'#00E676', share:15, score:30, growth:1.0, interval:90 },
+};
+
+const WORLD_EVENTS = [
+  { day: 240,  msg:'Windows 95 dirilis. Pasar heboh!', type:'event' },
+  { day: 480,  msg:'Internet mulai masuk rumah tangga.', type:'event' },
+  { day: 720,  msg:'Era dot-com dimulai. Investasi mengalir.', type:'success' },
+  { day: 1080, msg:'Krisis Y2K. Semua orang panik.', type:'warning' },
+  { day: 1440, msg:'Selamat datang di tahun 2000.', type:'success' },
+];
+
+const RANDOM_EVENTS = [
+  {
+    id:'investor', minDay:60, weight:1,
+    title:'Investor Menawarkan Dana',
+    text:'Seorang investor ingin menanam modal $15.000. Sebagai gantinya, dia minta 10% saham perusahaanmu.',
+    choices:[
+      { label:'Terima $15.000', effect:(s)=>{ s.money+=15000; s.equity=Math.max(50, (s.equity||100)-10); addLog('Investor masuk. Kamu kehilangan 10% saham.','event'); } },
+      { label:'Tolak', effect:(s)=>{ addLog('Kamu menolak investor.','info'); } }
+    ]
+  },
+  {
+    id:'bug', minDay:120, weight:1,
+    title:'Bug Kritis Ditemukan',
+    text:'Pengguna melaporkan bug serius di OS-mu. Review di forum mulai negatif.',
+    choices:[
+      { label:'Perbaiki ($800, 10 hari)', effect:(s)=>{ s.money-=800; s.day+=10; s.reputation=Math.min(100,s.reputation+3); addLog('Bug diperbaiki. Reputasi naik.','success'); } },
+      { label:'Abaikan', effect:(s)=>{ s.reputation=Math.max(0,s.reputation-8); addLog('Bug diabaikan. Reputasi turun.','warning'); } }
+    ]
+  },
+  {
+    id:'resign', minDay:180, weight:1,
+    title:'Engineer Minta Naik Gaji',
+    text:'Engineer senior mengancam resign kalau gaji tidak dinaikkan.',
+    choices:[
+      { label:'Naikkan gaji (+$200/bulan)', effect:(s)=>{ s.salaryBonus=(s.salaryBonus||0)+200; s.reputation=Math.min(100,s.reputation+5); addLog('Gaji dinaikkan. Tim senang.','success'); } },
+      { label:'Tolak', effect:(s)=>{ s.reputation=Math.max(0,s.reputation-5); if(Math.random()<0.4){ s.engineers=Math.max(1,s.engineers-1); addLog('Engineer resign!','warning'); } else { addLog('Engineer tetap tinggal, tapi kesal.','info'); } } }
+    ]
+  },
+  {
+    id:'magazine', minDay:240, weight:1,
+    title:'Wawancara Majalah',
+    text:'Majalah teknologi ingin mewawancarai kamu tentang OS-mu.',
+    choices:[
+      { label:'Terima', effect:(s)=>{ s.reputation=Math.min(100,s.reputation+10); addLog('Wawancara sukses. Reputasi naik.','success'); } },
+      { label:'Tolak', effect:(s)=>{ addLog('Kamu menolak wawancara.','info'); } }
+    ]
+  },
+  {
+    id:'piracy', minDay:360, weight:1,
+    title:'Pembajakan Marak',
+    text:'OS-mu dibajak di mana-mana. Penjualan turun.',
+    choices:[
+      { label:'Kampanye anti-pembajakan ($1.000)', effect:(s)=>{ s.money-=1000; addLog('Kampanye jalan. Pembajakan turun.','success'); } },
+      { label:'Biarkan', effect:(s)=>{ s.piracy=(s.piracy||0)+0.15; addLog('Pembajakan naik. Revenue -15%.','warning'); } }
+    ]
+  },
+];
+
+const REVIEW_TEMPLATES = {
+  high: [
+    { text:'OS ini revolusioner! Tidak ada yang seperti ini.', src:'TechDaily' },
+    { text:'Wajib beli untuk siapa saja yang serius.', src:'PCWorld' },
+    { text:'Masa depan komputasi sudah tiba.', src:'Wired' },
+    { text:'Kualitas luar biasa. Anggap saja mahal.', src:'Byte Magazine' },
+    { text:'Kompetitor harus waspada.', src:'InfoWorld' },
+  ],
+  mid: [
+    { text:'Cukup bagus, tapi masih ada bug.', src:'User4821' },
+    { text:'Lumayan untuk harganya.', src:'Forum Diskusi' },
+    { text:'Bisa lebih baik lagi.', src:'Reviewer Independen' },
+    { text:'Solid, tapi bukan yang terbaik.', src:'CompuWeek' },
+    { text:'Menjanjikan, tunggu versi berikutnya.', src:'Blog Teknologi' },
+  ],
+  low: [
+    { text:'Kurang fitur dibanding kompetitor.', src:'User1234' },
+    { text:'Tidak direkomendasikan.', src:'Kritikus' },
+    { text:'Tunggu versi berikutnya saja.', src:'Tech Blog' },
+    { text:'Banyak bug. Frustasi.', src:'User9999' },
+    { text:'Ketinggalan zaman.', src:'PC Magazine' },
+  ]
+};
+
+// ============================================================
+// === STATE ===
+// ============================================================
+const SAVE_KEY = 'os-tycoon-save-v2';
+
+function defaultState() {
+  const features = {};
+  FEATURES.forEach(f => { features[f.id] = 'locked'; });
+  features.cli = 'done';
+  features.gui = 'available';
+  features.fs = 'available';
+
+  const competitors = {};
+  Object.keys(COMPETITORS_INIT).forEach(k => {
+    competitors[k] = { ...COMPETITORS_INIT[k], lastRelease: 0 };
+  });
+
+  return {
+    money: 5000,
+    day: 0,
+    osScore: 5,
+    osShare: 0,
+    osPrice: 99,
+    osVersion: '1.0',
+    osName: 'MyOS',
+    features,
+    researching: null,
+    releasedFeatures: ['cli'],
+    history: [],
+    log: [{ day:0, msg:'Selamat datang di OS Tycoon!', type:'info' }],
+    running: true,
+    triggeredWorld: [],
+    triggeredRandom: [],
+    competitors,
+    engineers: 1,
+    reputation: 50,
+    equity: 100,
+    salaryBonus: 0,
+    piracy: 0,
+    lastReviews: null,
+    lastRevenue: 0,
+    marketing: 0,
+    gameOver: false,
+    showModal: null,
+    tab: 'dashboard',
+    speed: 1,
+  };
+}
+
+let state = loadState() || defaultState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    // migration guard: pastikan field wajib ada
+    if (typeof s.day !== 'number') return null;
+    s.showModal = null;
+    return s;
+  } catch(e) { return null; }
+}
+
+function saveState() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+// ============================================================
+// === UTILS ===
+// ============================================================
+function fmtMoney(n) {
+  const sign = n < 0 ? '-' : '';
+  const a = Math.abs(n);
+  if (a >= 1e9) return sign + '$' + (a/1e9).toFixed(2) + 'B';
+  if (a >= 1e6) return sign + '$' + (a/1e6).toFixed(2) + 'M';
+  if (a >= 1e3) return sign + '$' + (a/1e3).toFixed(1) + 'k';
+  return sign + '$' + a.toFixed(0);
+}
+
+function fmtDate(day) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const year = 1995 + Math.floor(day/360);
+  const mi = Math.floor((day%360)/30);
+  const d = (day%30)+1;
+  return d + ' ' + months[mi] + ' ' + year;
+}
+
+function bumpVersion(v) {
+  const p = v.split('.');
+  return p[0] + '.' + (Number(p[1]||0)+1);
+}
+
+function addLog(msg, type) {
+  state.log.push({ day: state.day, msg, type: type||'info' });
+  if (state.log.length > 60) state.log = state.log.slice(-60);
+}
+
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+// ============================================================
+// === SIMULATION ===
+// ============================================================
+function startResearch(id) {
+  if (state.researching) return;
+  const f = FEATURES.find(x => x.id === id);
+  if (!f || state.features[id] !== 'available') return;
+  if (state.money < f.cost) { addLog('Uang tidak cukup untuk ' + f.name, 'warning'); render(); return; }
+  state.money -= f.cost;
+  state.researching = { id, daysLeft: f.days, total: f.days };
+  state.features[id] = 'researching';
+  addLog('Mulai R&D: ' + f.name, 'info');
+  saveState(); render();
+}
+
+function releaseOS() {
+  if (state.gameOver) return;
+  const done = Object.keys(state.features).filter(id => state.features[id] === 'done');
+  let score = 0;
+  done.forEach(id => {
+    const f = FEATURES.find(x => x.id === id);
+    if (f) score += f.effect;
+  });
+  // skor dipengaruhi reputasi
+  score = Math.round(score * (0.7 + state.reputation/200));
+  state.osScore = score;
+  state.releasedFeatures = done;
+  state.osVersion = bumpVersion(state.osVersion);
+
+  // generate reviews
+  const reviews = generateReviews(score);
+  state.lastReviews = { version: state.osVersion, score, reviews };
+
+  addLog('Rilis OS v' + state.osVersion + ' — skor ' + score, 'success');
+  state.tab = 'reviews';
+  saveState(); render();
+}
+
+function generateReviews(score) {
+  const stars = clamp(Math.round(score/20), 1, 5);
+  let pool;
+  if (stars >= 4) pool = REVIEW_TEMPLATES.high;
+  else if (stars >= 3) pool = REVIEW_TEMPLATES.mid;
+  else pool = REVIEW_TEMPLATES.low;
+  const shuffled = [...pool].sort(()=>Math.random()-0.5);
+  const count = 4 + Math.floor(Math.random()*3);
+  const out = [];
+  for (let i=0; i<count; i++) {
+    const t = shuffled[i % shuffled.length];
+    const variation = Math.random() < 0.3 ? clamp(stars + (Math.random()<0.5?-1:1),1,5) : stars;
+    out.push({ stars: variation, text: t.text, src: t.src });
+  }
+  return out;
+}
+
+function setPrice(p) {
+  state.osPrice = clamp(p, 20, 500);
+  saveState(); render();
+}
+
+function runMarketing(cost) {
+  if (state.money < cost) { addLog('Uang tidak cukup untuk marketing.', 'warning'); render(); return; }
+  state.money -= cost;
+  const boost = cost / 5000; // 5000 = +1 share point multiplier
+  state.marketing += boost;
+  state.reputation = Math.min(100, state.reputation + 2);
+  addLog('Marketing campaign dijalankan (-' + fmtMoney(cost) + ')', 'success');
+  saveState(); render();
+}
+
+function hireEngineer() {
+  const cost = 500 * state.engineers;
+  if (state.money < cost) { addLog('Uang tidak cukup untuk rekrut.', 'warning'); render(); return; }
+  state.money -= cost;
+  state.engineers++;
+  addLog('Rekrut engineer baru. Total: ' + state.engineers, 'success');
+  saveState(); render();
+}
+
+function tickDay() {
+  if (state.gameOver) return;
+  state.day++;
+
+  // salary bulanan
+  if (state.day % 30 === 0) {
+    const totalSalary = state.engineers * 300 + (state.salaryBonus||0);
+    state.money -= totalSalary;
+  }
+
+  // R&D progress
+  if (state.researching) {
+    state.researching.daysLeft--;
+    if (state.researching.daysLeft <= 0) {
+      const f = FEATURES.find(x => x.id === state.researching.id);
+      state.features[f.id] = 'done';
+      addLog('R&D selesai: ' + f.name, 'success');
+      state.researching = null;
+      // unlock
+      FEATURES.forEach(x => {
+        if (x.requires && x.requires.includes(f.id) && state.features[x.id] === 'locked') {
+          if (x.requires.every(r => state.features[r] === 'done')) state.features[x.id] = 'available';
+        }
+      });
+    }
+  }
+
+  // revenue
+  let revenue = 0;
+  if (state.releasedFeatures.length > 2) {
+    const scoreFactor = state.osScore / 100;
+    const priceFactor = 1.2 - (state.osPrice / 300);
+    const repFactor = 0.5 + state.reputation / 100;
+    const engineFactor = 1 + (state.engineers - 1) * 0.15;
+    const piracyFactor = 1 - (state.piracy || 0);
+    const base = scoreFactor * priceFactor * repFactor * engineFactor * piracyFactor;
+    revenue = Math.max(0, Math.round(base * state.osPrice * 8));
+    state.money += revenue;
+
+    // pangsa naik
+    if (state.day % 7 === 0) {
+      const target = clamp(state.osScore * 0.5 * (0.7 + state.reputation/200), 0, 60);
+      const speed = 0.05 + state.marketing * 0.02;
+      state.osShare += (target - state.osShare) * speed;
+      state.osShare = clamp(state.osShare, 0, 70);
+      state.marketing = Math.max(0, state.marketing - 0.05);
+    }
+  }
+  state.lastRevenue = revenue;
+
+  // kompetitor rilis
+  Object.keys(state.competitors).forEach(k => {
+    const c = state.competitors[k];
+    if (state.day - c.lastRelease >= c.interval) {
+      c.lastRelease = state.day;
+      c.score += Math.round(c.growth * (2 + Math.random() * 3));
+      c.score = Math.min(c.score, 200);
+      if (Math.random() < 0.3) addLog('📢 ' + c.name + ' merilis OS baru!', 'warning');
+    }
+  });
+
+  // recalc pangsa kompetitor (share of remaining)
+  recalcMarketShare();
+
+  // world events
+  WORLD_EVENTS.forEach((ev, i) => {
+    if (state.day >= ev.day && !state.triggeredWorld.includes(i)) {
+      state.triggeredWorld.push(i);
+      addLog('📰 ' + ev.msg, ev.type);
+    }
+  });
+
+  // random events
+  if (state.day > 30 && Math.random() < 0.008 && !state.showModal) {
+    const available = RANDOM_EVENTS.filter(e => state.day >= e.minDay && !state.triggeredRandom.includes(e.id));
+    if (available.length) {
+      const ev = available[Math.floor(Math.random()*available.length)];
+      state.triggeredRandom.push(ev.id);
+      state.showModal = ev.id;
+      state.running = false;
+    }
+  }
+
+  // history
+  const snap = { day: state.day, share: state.osShare, revenue };
+  Object.keys(state.competitors).forEach(k => { snap[k] = state.competitors[k].share; });
+  state.history.push(snap);
+  if (state.history.length > 180) state.history = state.history.slice(-180);
+
+  // endgame
+  if (state.day >= 1800) {
+    state.gameOver = true;
+    state.running = false;
+    addLog('Tahun 2000 tiba. Permainan berakhir.', 'success');
+  }
+
+  if (state.day % 5 === 0) saveState();
+}
+
+function recalcMarketShare() {
+  // pangsa pemain = osShare (sudah dihitung). Kompetitor ambil sisa.
+  const playerShare = state.osShare;
+  const remaining = 100 - playerShare;
+
+  const weights = {};
+  let total = 0;
+  Object.keys(state.competitors).forEach(k => {
+    const c = state.competitors[k];
+    weights[k] = c.score * (0.8 + Math.random()*0.2);
+    total += weights[k];
+  });
+  Object.keys(state.competitors).forEach(k => {
+    state.competitors[k].share = (weights[k] / total) * remaining;
+  });
+}
+
+function resolveModal(choiceIdx) {
+  const ev = RANDOM_EVENTS.find(e => e.id === state.showModal);
+  if (!ev) { state.showModal = null; render(); return; }
+  const choice = ev.choices[choiceIdx];
+  if (choice && choice.effect) choice.effect(state);
+  state.showModal = null;
+  state.running = true;
+  saveState(); render();
+}
+
+function toggleRunning() {
+  if (state.gameOver) return;
+  state.running = !state.running;
+  saveState(); render();
+}
+
+function switchTab(t) {
+  state.tab = t;
+  render();
+}
+
+function resetGame() {
+  if (!confirm('Hapus semua progress dan mulai ulang?')) return;
+  localStorage.removeItem(SAVE_KEY);
+  state = defaultState();
+  saveState(); render();
+}
+
+function setSpeed(s) {
+  state.speed = s;
+  saveState(); render();
+}
+
+// ============================================================
+// === CHARTS ===
+// ============================================================
+function renderMultiChart() {
+  const data = state.history;
+  if (data.length < 2) return '<div class="chart-empty">Rilis OS untuk melihat grafik pangsa pasar.</div>';
+
+  const w = 320, h = 130, pad = 4;
+  const series = [
+    { key:'share',  color:'#00D9FF', label:'Kamu' },
+    ...Object.keys(state.competitors).map(k => ({
+      key: k, color: state.competitors[k].color, label: state.competitors[k].name
+    })),
+  ];
+
+  let max = 10;
+  data.forEach(d => series.forEach(s => { if (d[s.key] > max) max = d[s.key]; }));
+
+  let paths = '';
+  series.forEach(s => {
+    let path = '';
+    data.forEach((d, i) => {
+      const x = pad + (i / (data.length - 1)) * (w - pad*2);
+      const y = h - pad - (d[s.key] / max) * (h - pad*2);
+      path += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+    });
+    paths += '<path d="' + path + '" fill="none" stroke="' + s.color + '" stroke-width="2" stroke-linejoin="round"/>';
+  });
+
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" class="chart">'
+    + '<defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#00D9FF" stop-opacity="0.25"/>'
+    + '<stop offset="100%" stop-color="#00D9FF" stop-opacity="0"/>'
+    + '</linearGradient></defs>'
+    + paths
+    + '</svg>';
+}
+
+function renderRevenueChart() {
+  const data = state.history;
+  if (data.length < 2) return '<div class="chart-empty chart-sm">Belum ada revenue.</div>';
+
+  const w = 320, h = 90, pad = 4;
+  const max = Math.max(100, ...data.map(d => d.revenue || 0));
+
+  let path = '';
+  data.forEach((d, i) => {
+    const x = pad + (i / (data.length - 1)) * (w - pad*2);
+    const y = h - pad - ((d.revenue || 0) / max) * (h - pad*2);
+    path += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  });
+
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" class="chart chart-sm">'
+    + '<defs><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#00E676" stop-opacity="0.35"/>'
+    + '<stop offset="100%" stop-color="#00E676" stop-opacity="0"/>'
+    + '</linearGradient></defs>'
+    + '<path d="' + path + 'L' + (w-pad) + ',' + (h-pad) + ' L' + pad + ',' + (h-pad) + ' Z" fill="url(#rg)"/>'
+    + '<path d="' + path + '" fill="none" stroke="#00E676" stroke-width="2" stroke-linejoin="round"/>'
+    + '</svg>';
+}
+
+// ============================================================
+// === RENDER ===
+// ============================================================
+function renderHeader() {
+  return '<header class="header">'
+    + '<div class="hstack">'
+    + '<span class="brand">OS TYCOON</span>'
+    + '<span class="date">' + fmtDate(state.day) + '</span>'
+    + '</div>'
+    + '<div class="hstack">'
+    + '<span class="money">' + fmtMoney(state.money) + '</span>'
+    + '<button class="play-btn" data-act="toggle">' + (state.running ? 'II' : '▶') + '</button>'
+    + '</div>'
+    + '</header>';
+}
+
+function renderDashboard() {
+  const playerShare = state.osShare;
+  const comps = Object.keys(state.competitors).map(k => ({
+    ...state.competitors[k], key:k
+  }));
+
+  return ''
+    + '<section class="card">'
+    + '<div class="card-title">Pangsa Pasar</div>'
+    + renderMultiChart()
+    + '<div class="stats-row">'
+    + '<div class="stat"><span class="stat-label">Kamu</span><span class="stat-value accent">' + playerShare.toFixed(1) + '%</span></div>'
+    + comps.map(c => '<div class="stat"><span class="stat-label" style="color:' + c.color + '">' + c.name + '</span><span class="stat-value">' + c.share.toFixed(1) + '%</span></div>').join('')
+    + '</div>'
+    + '</section>'
+
+    + '<section class="card">'
+    + '<div class="card-title">Revenue Harian</div>'
+    + renderRevenueChart()
+    + '<div class="stats-row">'
+    + '<div class="stat"><span class="stat-label">Hari ini</span><span class="stat-value success">' + fmtMoney(state.lastRevenue) + '</span></div>'
+    + '<div class="stat"><span class="stat-label">Reputasi</span><span class="stat-value">' + Math.round(state.reputation) + '</span></div>'
+    + '<div class="stat"><span class="stat-label">Versi</span><span class="stat-value">v' + state.osVersion + '</span></div>'
+    + '</div>'
+    + '</section>'
+
+    + '<section class="card">'
+    + '<div class="card-title">Aksi Cepat</div>'
+    + '<button class="btn primary" data-act="release" style="margin-bottom:8px">RILIS OS v' + bumpVersion(state.osVersion) + '</button>'
+    + '<div class="btn-row">'
+    + '<button class="btn" data-act="goto-rnd">R&D</button>'
+    + '<button class="btn" data-act="goto-market">Pasar</button>'
+    + '</div>'
+    + '</section>'
+
+    + '<section class="card">'
+    + '<div class="card-title">Log</div>'
+    + '<div class="log">'
+    + state.log.slice(-6).reverse().map(l =>
+        '<div class="log-item log-' + l.type + '"><span class="log-day">D' + l.day + '</span><span>' + l.msg + '</span></div>'
+      ).join('')
+    + '</div>'
+    + '</section>';
+}
+
+function renderRnD() {
+  let html = '<section class="card">'
+    + '<div class="card-title">Tim</div>'
+    + '<div class="stats-row">'
+    + '<div class="stat"><span class="stat-label">Engineer</span><span class="stat-value">' + state.engineers + '</span></div>'
+    + '<div class="stat"><span class="stat-label">Gaji/bulan</span><span class="stat-value">' + fmtMoney(state.engineers*300 + (state.salaryBonus||0)) + '</span></div>'
+    + '<div class="stat"><span class="stat-label">Reputasi</span><span class="stat-value">' + Math.round(state.reputation) + '</span></div>'
+    + '</div>'
+    + '<div class="divider"></div>'
+    + '<button class="btn" data-act="hire">Rekrut Engineer (+$' + (500*state.engineers) + ')</button>'
+    + '</section>';
+
+  if (state.researching) {
+    const f = FEATURES.find(x => x.id === state.researching.id);
+    const pct = (1 - state.researching.daysLeft / state.researching.total) * 100;
+    html += '<section class="card">'
+      + '<div class="card-title">Sedang Diteliti</div>'
+      + '<div style="font-size:14px;font-weight:500">' + f.name + '</div>'
+      + '<div class="progress"><div class="progress-bar" style="width:' + pct + '%"></div></div>'
+      + '<div class="card-sub">' + state.researching.daysLeft + ' hari lagi</div>'
+      + '</section>';
+  }
+
+  // group by era
+  const eras = {};
+  FEATURES.forEach(f => { if (!eras[f.era]) eras[f.era] = []; eras[f.era].push(f); });
+
+  html += '<section class="card">'
+    + '<div class="card-title">Tech Tree</div>';
+  Object.keys(eras).sort().forEach(era => {
+    html += '<div class="era-header">' + ERA_NAMES[era] + '</div>';
+    html += '<div class="feature-list">';
+    eras[era].forEach(f => {
+      const st = state.features[f.id];
+      const dis = st !== 'available' ? 'disabled' : '';
+      let icon = '';
+      if (st === 'done') icon = '✓';
+      else if (st === 'locked') icon = '🔒';
+      else if (st === 'researching') icon = '⋯';
+      html += '<button class="feature-btn ' + st + '" ' + dis + ' data-act="research" data-id="' + f.id + '">'
+        + '<div class="feature-name">' + f.name + '</div>'
+        + '<div class="feature-cost">$' + f.cost + ' · ' + f.days + 'd · +' + f.effect + '</div>'
+        + '<div class="feature-status">' + icon + '</div>'
+        + '</button>';
+    });
+    html += '</div>';
+  });
+  html += '</section>';
+  return html;
+}
+
+function renderMarket() {
+  const comps = Object.keys(state.competitors).map(k => ({ ...state.competitors[k], key:k }));
+  return ''
+    + '<section class="card">'
+    + '<div class="card-title">Pesaing</div>'
+    + comps.map(c => '<div class="comp-row">'
+        + '<span class="comp-dot" style="background:' + c.color + '"></span>'
+        + '<span class="comp-name">' + c.name + '</span>'
+        + '<span class="comp-share">' + c.share.toFixed(1) + '%</span>'
+      + '</div>').join('')
+    + '<div class="card-sub">Skor OS kompetitor naik seiring waktu. Kamu harus terus berinovasi.</div>'
+    + '</section>'
+
+    + '<section class="card">'
+    + '<div class="card-title">Harga OS</div>'
+    + '<div style="font-size:32px;font-family:ui-monospace,monospace;font-weight:700;text-align:center;margin:12px 0">$' + state.osPrice + '</div>'
+    + '<div class="btn-row">'
+    + '<button class="btn" data-act="price-down">- $10</button>'
+    + '<button class="btn" data-act="price-up">+ $10</button>'
+    + '</div>'
+    + '<div class="card-sub">Harga rendah = adopsi lebih cepat, revenue per unit lebih kecil.</div>'
+    + '</section>'
+
+    + '<section class="card">'
+    + '<div class="card-title">Marketing</div>'
+    + '<button class="btn" data-act="mkt-500" style="margin-bottom:8px">Iklan kecil · $500</button>'
+    + '<button class="btn" data-act="mkt-2000" style="margin-bottom:8px">Kampanye · $2.000</button>'
+    + '<button class="btn" data-act="mkt-5000">Blitz · $5.000</button>'
+    + '<div class="card-sub">Marketing menaikkan reputasi dan mempercepat kenaikan pangsa.</div>'
+    + '</section>';
+}
+
+function renderReviews() {
+  if (!state.lastReviews) {
+    return '<div class="empty">Belum ada review.<br>Rilis OS pertamamu untuk melihat reaksi pasar.</div>';
+  }
+  const r = state.lastReviews;
+  const stars = '★'.repeat(clamp(Math.round(r.score/20),1,5)) + '☆'.repeat(5 - clamp(Math.round(r.score/20),1,5));
+  return ''
+    + '<section class="card">'
+    + '<div class="card-title">Review v' + r.version + '</div>'
+    + '<div style="font-size:24px;color:var(--accent2);margin-bottom:4px">' + stars + '</div>'
+    + '<div class="card-sub" style="margin-bottom:16px">Skor OS: ' + r.score + '</div>'
+    + r.reviews.map(rv =>
+        '<div class="review ' + (rv.stars>=4?'good':rv.stars>=3?'mid':'bad') + '">'
+        + '<div class="review-stars">' + '★'.repeat(rv.stars) + '☆'.repeat(5-rv.stars) + '</div>'
+        + '<div class="review-text">"' + rv.text + '"</div>'
+        + '<div class="review-source">— ' + rv.src + '</div>'
+        + '</div>'
+      ).join('')
+    + '</section>';
+}
+
+function renderSettings() {
+  return ''
+    + '<section class="card">'
+    + '<div class="card-title">Statistik</div>'
+    + '<div class="stats-row">'
+    + '<div class="stat"><span class="stat-label">Hari</span><span class="stat-value">' + state.day + '</span></div>'
+    + '<div class="stat"><span class="stat-label">Equity</span><span class="stat-value">' + state.equity + '%</span></div>'
+    + '<div class="stat"><span class="stat-label">Versi</span><span class="stat-value">v' + state.osVersion + '</span></div>'
+    + '</div>'
+    + '</section>'
+
+    + '<section class="card">'
+    + '<div class="card-title">Kecepatan</div>'
+    + '<div class="btn-row">'
+    + [1,2,4].map(s =>
+        '<button class="btn' + (state.speed===s?' primary':'') + '" data-act="speed" data-s="' + s + '">' + s + '×</button>'
+      ).join('')
+    + '</div>'
+    + '</section>'
+
+    + '<section class="card">'
+    + '<div class="card-title">Bahaya</div>'
+    + '<button class="btn danger" data-act="reset">Reset Game</button>'
+    + '<div class="card-sub">Menghapus semua progress. Tidak bisa dibatalkan.</div>'
+    + '</section>'
+
+    + '<section class="card">'
+    + '<div class="card-title">Tentang</div>'
+    + '<div class="card-sub">OS Tycoon v0.2<br>Dibuat dengan HTML + CSS + JS.<br>Data disimpan di browser HP kamu.</div>'
+    + '</section>';
+}
+
+function renderTabs() {
+  const tabs = [
+    { id:'dashboard', label:'Home',    icon:'◆' },
+    { id:'rnd',       label:'R&D',     icon:'⚙' },
+    { id:'market',    label:'Pasar',   icon:'📊' },
+    { id:'reviews',   label:'Review',  icon:'★' },
+    { id:'settings',  label:'Setelan', icon:'⚙' },
+  ];
+  return '<div class="tabs">'
+    + tabs.map(t =>
+        '<button class="tab' + (state.tab===t.id?' active':'') + '" data-act="tab" data-tab="' + t.id + '">'
+        + '<span class="tab-icon">' + t.icon + '</span>'
+        + '<span>' + t.label + '</span>'
+        + '</button>'
+      ).join('')
+    + '</div>';
+}
+
+function renderModal() {
+  if (!state.showModal) return '';
+  const ev = RANDOM_EVENTS.find(e => e.id === state.showModal);
+  if (!ev) return '';
+  return '<div class="modal-overlay">'
+    + '<div class="modal">'
+    + '<h2>' + ev.title + '</h2>'
+    + '<p>' + ev.text + '</p>'
+    + ev.choices.map((c, i) =>
+        '<button class="btn' + (i===0?' primary':'') + '" data-act="modal" data-i="' + i + '" style="margin-bottom:8px">' + c.label + '</button>'
+      ).join('')
+    + '</div>'
+    + '</div>';
+}
+
+function render() {
+  const app = document.getElementById('app');
+  const tabs = document.getElementById('tabs');
+  const modal = document.getElementById('modal');
+
+  let body = renderHeader();
+  if (state.gameOver) {
+    body += '<div class="card"><div class="card-title">Permainan Selesai</div>'
+      + '<div style="font-size:32px;text-align:center;margin:16px 0">🏆</div>'
+      + '<div style="text-align:center;font-size:14px;line-height:1.6">'
+      + 'Kamu mengakhiri tahun 2000 dengan:<br>'
+      + '<strong style="color:var(--accent);font-size:20px">' + state.osShare.toFixed(1) + '% pangsa pasar</strong><br>'
+      + '<strong style="color:var(--success);font-size:20px">' + fmtMoney(state.money) + '</strong>'
+      + '</div>'
+      + '<div class="divider"></div>'
+      + '<button class="btn primary" data-act="reset">Main Ulang</button>'
+      + '</div>';
+  } else {
+    if (state.tab === 'dashboard') body += renderDashboard();
+    else if (state.tab === 'rnd') body += renderRnD();
+    else if (state.tab === 'market') body += renderMarket();
+    else if (state.tab === 'reviews') body += renderReviews();
+    else if (state.tab === 'settings') body += renderSettings();
+  }
+
+  app.innerHTML = body;
+  tabs.innerHTML = state.gameOver ? '' : renderTabs();
+  modal.innerHTML = renderModal();
+}
+
+// ============================================================
+// === EVENTS ===
+// ============================================================
+document.body.addEventListener('click', function(e) {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const act = el.dataset.act;
+
+  if (act === 'toggle') toggleRunning();
+  else if (act === 'release') releaseOS();
+  else if (act === 'research') startResearch(el.dataset.id);
+  else if (act === 'hire') hireEngineer();
+  else if (act === 'price-down') setPrice(state.osPrice - 10);
+  else if (act === 'price-up') setPrice(state.osPrice + 10);
+  else if (act === 'mkt-500') runMarketing(500);
+  else if (act === 'mkt-2000') runMarketing(2000);
+  else if (act === 'mkt-5000') runMarketing(5000);
+  else if (act === 'goto-rnd') switchTab('rnd');
+  else if (act === 'goto-market') switchTab('market');
+  else if (act === 'tab') switchTab(el.dataset.tab);
+  else if (act === 'modal') resolveModal(Number(el.dataset.i));
+  else if (act === 'reset') resetGame();
+  else if (act === 'speed') setSpeed(Number(el.dataset.s));
+});
+
+// ============================================================
+// === GAME LOOP ===
+// ============================================================
+let lastTick = Date.now();
+
+function loop() {
+  if (state.running && !state.gameOver && !state.showModal) {
+    const now = Date.now();
+    const tickMs = 1000 / state.speed;
+    if (now - lastTick >= tickMs) {
+      const ticks = Math.min(Math.floor((now - lastTick) / tickMs), 30);
+      for (let i = 0; i < ticks; i++) tickDay();
+      lastTick = now;
+      render();
+    }
+  } else {
+    lastTick = Date.now();
+  }
+  requestAnimationFrame(loop);
+}
+
+// ============================================================
+// === BOOT ===
+// ============================================================
+render();
+loop();
+</script>
+</body>
+</html>
