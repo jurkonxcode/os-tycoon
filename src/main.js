@@ -41,24 +41,22 @@ function boot() {
   const notifications = new NotificationSystem(notifEl, game.bus);
   notifications.mount();
 
-  // Sidebar + Topbar
-  const sidebar = new Sidebar(sidebarEl, { navigate: () => {} }, game.bus);
+  // Router (needs to exist before Sidebar)
   const router = new Router(viewEl, game.bus);
-  sidebar = Object.assign(sidebar, { _router: router });
 
-  // Recreate sidebar bound to router (simpler and correct).
-  sidebarEl.innerHTML = "";
-  const realSidebar = new Sidebar(sidebarEl, router, game.bus);
-  realSidebar.mount();
+  // Sidebar
+  const sidebar = new Sidebar(sidebarEl, router, game.bus);
+  sidebar.mount();
 
+  // Topbar
   const topbar = new Topbar(topbarEl, game.state, game.bus, game.time, game.economy);
   topbar.mount();
 
   // Register routes
-  router.register("dashboard", () => new Dashboard(game.state, game.bus, systems));
-  router.register("company",   () => new CompanyView(game.state, game.bus, systems));
-  router.register("finance",   () => new FinanceView(game.state, game.bus, systems));
-  router.register("settings",  () => new SettingsView(game.state, game.bus, systems));
+  router.register("dashboard",    () => new Dashboard(game.state, game.bus, systems));
+  router.register("company",      () => new CompanyView(game.state, game.bus, systems));
+  router.register("finance",      () => new FinanceView(game.state, game.bus, systems));
+  router.register("settings",     () => new SettingsView(game.state, game.bus, systems));
 
   router.register("cpu-lab", () => new PlaceholderView({
     title: "CPU Lab",
@@ -137,22 +135,18 @@ function boot() {
       timeout: 0
     });
   });
-  // Reset flag when cash goes above threshold again (for future sessions).
   game.bus.on("state:changed", ({ key }) => {
     if (key !== "company") return;
     if (game.state.get("company").cash > BALANCE.LOW_CASH_THRESHOLD) lowCashWarned = false;
   });
 
-  // New game request from settings
   game.bus.on("game:newRequested", () => {
     game.newGame();
     lowCashWarned = false;
   });
 
-  // Router start (after routes registered)
+  // Start router, then the game loop.
   router.start("dashboard");
-
-  // Game start
   game.start();
 
   // Auto-save every 30 simulated days.
@@ -172,7 +166,7 @@ function boot() {
     }
   });
 
-  // Warn once at load if a save exists.
+  // Informational toast if a save exists on load.
   if (game.save.hasSave()) {
     game.bus.emit("notification:show", {
       title: "Save detected",
@@ -182,7 +176,7 @@ function boot() {
     });
   }
 
-  // Expose for debugging in browser console (not used by game logic).
+  // Debug handle (read-only usage from console).
   window.__OS_TYCOON__ = { game, router };
 }
 
