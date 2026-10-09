@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="OS Tycoon: Technology Empire — build a technology company from 1995 onwards.">
+  <meta name="theme-color" content="#0a0f1a">
+  <title>OS Tycoon: Technology Empire</title>
+  <link rel="stylesheet" href="./css/reset.css">
+  <link rel="stylesheet" href="./css/variables.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/dashboard.css">
+  <link rel="stylesheet" href="./css/responsive.css">
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <aside id="sidebar" class="sidebar" aria-label="Primary navigation"></aside>
+    <div class="main-area">
+      <header id="topbar" class="topbar" aria-label="Status bar"></header>
+      <main id="view-container" class="view-container" role="main" tabindex="-1"></main>
+    </div>
+  </div>
+  <div id="notifications" class="notification-stack" aria-live="polite" aria-atomic="false"></div>
+  <noscript>
+    <p style="padding:16px;color:#fff;background:#111;font-family:sans-serif">
+      OS Tycoon requires JavaScript with ES Modules enabled.
+    </p>
+  </noscript>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
