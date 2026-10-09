@@ -25,7 +25,6 @@ export class SaveSystem {
     data.meta.schemaVersion = GAME_CONFIG.SCHEMA_VERSION;
     try {
       localStorage.setItem(GAME_CONFIG.SAVE_KEY, JSON.stringify(data));
-      // Also persist lastSavedAt back to live state for UI display.
       this._state.get("meta").lastSavedAt = data.meta.lastSavedAt;
       this._bus.emit("save:success", { at: data.meta.lastSavedAt });
       return { ok: true };
@@ -42,7 +41,7 @@ export class SaveSystem {
     let raw;
     try {
       raw = localStorage.getItem(GAME_CONFIG.SAVE_KEY);
-    } catch (err) {
+    } catch {
       return { ok: false, reason: "Cannot access LocalStorage." };
     }
     if (!raw) return { ok: false, reason: "No save found." };
@@ -58,7 +57,6 @@ export class SaveSystem {
     if (!shape.ok) return { ok: false, reason: shape.reason };
 
     if (parsed.meta.schemaVersion !== GAME_CONFIG.SCHEMA_VERSION) {
-      // No migrations yet. Refuse mismatched versions rather than corrupt.
       return {
         ok: false,
         reason: `Save schema version ${parsed.meta.schemaVersion} is not supported.`
